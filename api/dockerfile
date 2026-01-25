@@ -5,4 +5,4 @@ COPY ./requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 COPY ./src ./
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8091", "--root-path", "/validation/api/v1"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8091", "--root-path", "/fermento/api/v1"]

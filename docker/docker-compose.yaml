@@ -14,6 +14,22 @@ services:
     networks:
       - services
 
+  fermento-api:
+    image: fermento-api
+    build: ../api
+    restart: unless-stopped
+    environment:
+      - FERMENTO_API_ROOT_PATH=/src/data/
+      - FERMENTO_API_DB_URL=sqlite:////src/data/database.db
+      - FERMENTO_API_LOG_LEVEL=DEBUG
+    ports:
+      - 8091:8091
+    volumes:
+      - ../api/data/:/src/data/
+      - ../api/src/migrations/versions:/src/migrations/versions/
+    networks:
+      - services
+
 networks:
   services:
     driver: bridge
