@@ -1,0 +1,4 @@
+pandas==2.2.3
+streamlit==1.44.1
+streamlit-javascript==0.1.5
+python-dotenv==1.1.0

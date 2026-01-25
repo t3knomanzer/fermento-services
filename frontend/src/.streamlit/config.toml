@@ -1,0 +1,20 @@
+[server]
+# Automatically rerun script when the file is modified on disk.
+# Default: false
+runOnSave = true
+
+# Enable serving files from a `static` directory in the running app's
+# directory.
+# Default: false
+enableStaticServing = true
+
+[browser]
+# Whether to send usage statistics to Streamlit.
+# Default: true
+gatherUsageStats = false
+
+[theme]
+base="dark"
+primaryColor="#9e9e56"
+backgroundColor="#1a1a19"
+secondaryBackgroundColor="#312f2d"
