@@ -1,7 +1,7 @@
 services:
   fermento-frontend:
     image: fermento-frontend
-    build: /frontend
+    build: ./frontend
     restart: unless-stopped
     environment:
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
