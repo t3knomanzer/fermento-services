@@ -45,13 +45,3 @@ venv.bak/
 .pypirc
 
 # Project specific
-firmware/
-lib/
-_lib/
-_drivers/
-drivers/
-config.py
-wokwi.toml
-diagram.json
-*.code-workspace
-*.log
