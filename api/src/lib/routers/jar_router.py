@@ -14,7 +14,7 @@ from lib.schemas.jar_schemas import (
 from lib.services.jar_service import JarService
 
 router = crud_router(
-    "/actor",
+    "/jar",
     JarRepository,
     JarService,
     JarCreateSchema,
