@@ -1,5 +1,14 @@
 services:
-  fermento-frontend:
+  nginx:
+    image: nginx
+    build: ../nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    networks:
+      - services
+
+  frontend:
     image: fermento-frontend
     build: ../frontend
     restart: unless-stopped
@@ -14,7 +23,7 @@ services:
     networks:
       - services
 
-  fermento-api:
+  api:
     image: fermento-api
     build: ../api
     restart: unless-stopped
