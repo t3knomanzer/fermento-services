@@ -100,7 +100,7 @@ MQTT is **device-facing only**.
 
 ## Device Interaction
 
-**Write path**
+**Write path**. 
 Device → MQTT or HTTP → Ingestor → HTTP → API → Database
 
 **Read path**
