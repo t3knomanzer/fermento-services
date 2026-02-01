@@ -33,9 +33,9 @@ services:
     build: ../api
     restart: unless-stopped
     environment:
-      - FERMENTO_API_ROOT_PATH=/src/data/
-      - FERMENTO_API_DB_URL=sqlite:////src/data/database.db
-      - FERMENTO_API_LOG_LEVEL=DEBUG
+      - API_ROOT_PATH=/src/data/
+      - API_DB_URL=sqlite:////src/data/database.db
+      - API_LOG_LEVEL=DEBUG
     ports:
       - 8091:8091
     volumes:

@@ -12,7 +12,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from lib.config import Config
 from lib.database import close_database, create_database
 from lib.logging import logger
-from lib.routers import jar_router
+from lib.routers import (
+    feeding_event_router,
+    feeding_sample_router,
+    flour_blend_router,
+    flour_router,
+    jar_router,
+    starter_router,
+)
 
 from lib.utils.pathing import create_root_path
 
@@ -42,6 +49,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware, **Config().cors_config.model_dump())
 app.include_router(jar_router.router)
+app.include_router(starter_router.router)
+app.include_router(flour_router.router)
+app.include_router(flour_blend_router.router)
+app.include_router(feeding_event_router.router)
+app.include_router(feeding_sample_router.router)
 
 
 @app.get("/healthcheck")

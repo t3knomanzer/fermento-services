@@ -28,7 +28,7 @@ class Config(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="FERMENTO_API_", env_nested_delimiter="__"
+        env_prefix="API_", env_nested_delimiter="__"
     )
 
     root_path: Path = Path.home() / "fermento"
