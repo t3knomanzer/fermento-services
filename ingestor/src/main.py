@@ -1,12 +1,13 @@
+from urllib.error import HTTPError
 from fastapi.concurrency import asynccontextmanager
 import config
 from fastapi import FastAPI
 
 from lib.api.client import APIClient
 from lib.mqtt.subscriber import MqttSubscriber
+from lib.mqtt.utils import topic_matches_sub
 from fermento_schemas.ingestor.telemetry import TelemetrySchema
 from fermento_schemas.api.feeding_sample import FeedingSampleCreateSchema
-import paho.mqtt.client as mqtt
 
 
 # ------------------------------------------------------
@@ -20,7 +21,7 @@ api_client = APIClient(base_url=config.API_ADDRESS)
 # ------------------------------------------------------
 def on_message(topic, payload):
     print(f"Received {topic}: {payload}")
-    if mqtt.topic_matches_sub(config.TOPIC_TELEMETRY, topic):
+    if topic_matches_sub(config.TOPIC_TELEMETRY, topic):
         # Validate pydantic model
         telemetry = TelemetrySchema.model_validate_json(payload)
         # Convert to api schema
@@ -31,9 +32,17 @@ def on_message(topic, payload):
             co2=telemetry.co2,
             distance=telemetry.distance,
         )
+
         # Send to api
-        api_client.create_resource("feeding-sample", feeding_sample.model_dump())
-    if mqtt.topic_matches_sub(config.TOPIC_STATUS, topic):
+        try:
+            response = api_client.create_resource(
+                "feeding-samples", feeding_sample.model_dump()
+            )
+            print(f"Feeding sample created: {response}")
+        except HTTPError as e:
+            print(f"Error creating feeding sample: {e}")
+
+    if topic_matches_sub(config.TOPIC_STATUS, topic):
         # Process status data
         pass
 
