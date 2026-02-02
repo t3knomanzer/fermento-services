@@ -1,19 +1,48 @@
 {
 	"folders": [
 		{
-			"path": "api"
-		},
-		{
-			"path": "frontend"
-		},
-		{
+			"name": "docker",
 			"path": "docker"
 		},
 		{
+			"name": "nginx",
 			"path": "nginx"
 		},
 		{
-			"path": "worker"
+			"name": "mosquitto",
+			"path": "mosquitto"
+		},
+		{
+			"name": "api",
+			"path": "api"
+		},
+		{
+			"name": "ingestor",
+			"path": "ingestor"
+		},
+		{
+			"name": "retriever",
+			"path": "retriever"
+		},
+		{
+			"name": "processor",
+			"path": "processor"
+		},
+		{
+			"name": "predictor",
+			"path": "predictor"
+		},
+		{
+			"name": "notifier",
+			"path": "notifier"
+		},
+		{
+			"name": "frontend",
+			"path": "frontend"
+		},
+		{
+			"path": "packages"
 		}
-	]
+	],
+	"settings": {}
 }
