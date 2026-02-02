@@ -47,7 +47,7 @@ def on_message(topic, payload):
         pass
 
 
-subscriber = MqttSubscriber(config.SERVER_ADDRESS, int(config.SERVER_PORT))
+subscriber = MqttSubscriber(config.BROKER_ADDRESS, int(config.BROKER_PORT))
 subscriber.add_subscribe_topic(config.TOPIC_TELEMETRY)
 subscriber.add_on_message_callback(on_message)
 
