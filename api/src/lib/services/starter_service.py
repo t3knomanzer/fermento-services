@@ -6,7 +6,7 @@ from lib.models import StarterModel
 from lib.repositories.starter_repository import (
     StarterRepository,
 )
-from lib.schemas.starter import (
+from fermento_schemas.api.starter import (
     StarterCreateSchema,
     StarterSchema,
     StarterUpdateSchema,
