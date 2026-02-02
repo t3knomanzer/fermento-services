@@ -6,7 +6,7 @@ from lib.models import FeedingSampleModel
 from lib.repositories.feeding_sample_repository import (
     FeedingSampleRepository,
 )
-from lib.schemas.feeding_sample_schemas import (
+from lib.schemas.feeding_sample import (
     FeedingSampleCreateSchema,
     FeedingSampleSchema,
     FeedingSampleUpdateSchema,

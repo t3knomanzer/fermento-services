@@ -6,7 +6,7 @@ API router module for actor operations, providing endpoints for creating, readin
 
 from lib.repositories.jar_repository import JarRepository
 from lib.routers.base_router import crud_router
-from lib.schemas.jar_schemas import (
+from lib.schemas.jar import (
     JarCreateSchema,
     JarSchema,
     JarUpdateSchema,

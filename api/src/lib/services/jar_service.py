@@ -6,7 +6,7 @@ from lib.models import JarModel
 from lib.repositories.jar_repository import (
     JarRepository,
 )
-from lib.schemas.jar_schemas import JarCreateSchema, JarSchema, JarUpdateSchema
+from lib.schemas.jar import JarCreateSchema, JarSchema, JarUpdateSchema
 from lib.services.base_service import BaseCrudService
 
 

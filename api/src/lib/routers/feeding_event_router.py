@@ -6,7 +6,7 @@ API router module for actor operations, providing endpoints for creating, readin
 
 from lib.repositories.feeding_event_repository import FeedingEventRepository
 from lib.routers.base_router import crud_router
-from lib.schemas.feeding_event_schemas import (
+from lib.schemas.feeding_event import (
     FeedingEventCreateSchema,
     FeedingEventSchema,
     FeedingEventUpdateSchema,

@@ -6,7 +6,7 @@ from lib.models import StarterModel
 from lib.repositories.starter_repository import (
     StarterRepository,
 )
-from lib.schemas.starter_schemas import (
+from lib.schemas.starter import (
     StarterCreateSchema,
     StarterSchema,
     StarterUpdateSchema,
