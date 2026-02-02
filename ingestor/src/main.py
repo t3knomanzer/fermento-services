@@ -4,8 +4,8 @@ from fastapi import FastAPI
 
 from lib.api.client import APIClient
 from lib.mqtt.subscriber import MqttSubscriber
-from lib.schemas.telemetry import TelemetrySchema
-from fermento_schemas.feeding_sample import FeedingSampleCreateSchema
+from fermento_schemas.ingestor.telemetry import TelemetrySchema
+from fermento_schemas.api.feeding_sample import FeedingSampleCreateSchema
 import paho.mqtt.client as mqtt
 
 
