@@ -74,7 +74,7 @@ class BaseCrudService(
             self._repository.create(session, model)
         return self._convert_to_schema(model)
 
-    def find(self, session: Session, item: TCreateSchema) -> TSchema:
+    def find(self, session: Session, item: TCreateSchema) -> TSchema | None:
         """
         Find an item in the database.
 
