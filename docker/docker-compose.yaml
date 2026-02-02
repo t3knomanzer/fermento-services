@@ -63,6 +63,25 @@ services:
     networks:
       - services
 
+  ingestor:
+    image: fermento-ingestor
+    container_name: fermento-ingestor
+    build: ../ingestor
+    restart: unless-stopped
+    environment:
+      - API_ADDRESS=http://localhost:8091
+      - BROKER_ADDRESS=localhost
+      - BROKER_PORT=1883
+      - TOPIC_TELEMETRY=fermento/+/telemetry
+      - TOPIC_STATUS=fermento/+/status
+    ports:
+      - 8091:8091
+    volumes:
+      - ../api/data/:/src/data/
+      - ../api/src/migrations/versions:/src/migrations/versions/
+    networks:
+      - services
+
 networks:
   services:
     driver: bridge
