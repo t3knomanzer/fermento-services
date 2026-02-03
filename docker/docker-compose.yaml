@@ -75,7 +75,7 @@ services:
       - TOPIC_TELEMETRY=fermento/+/telemetry
       - TOPIC_STATUS=fermento/+/status
     ports:
-      - 8091:8091
+      - 8092:8092
     volumes:
       - ../api/data/:/src/data/
       - ../api/src/migrations/versions:/src/migrations/versions/
