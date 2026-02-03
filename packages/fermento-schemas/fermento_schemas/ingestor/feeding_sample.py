@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class TelemetrySchema(BaseModel):
+class FeedingSampleSchema(BaseModel):
     """
     Schema for telemetry data validation.
     """
