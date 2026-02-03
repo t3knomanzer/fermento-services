@@ -14,11 +14,11 @@ def on_message(client, userdata, msg):
     print(msg.topic + " " + str(msg.payload))
 
 
-mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="sandbox_subscriber")
 mqttc.on_connect = on_connect
 mqttc.on_message = on_message
 
-mqttc.connect("localhost", 1883, 60)
+mqttc.connect("192.168.8.5", 1883, 60)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.

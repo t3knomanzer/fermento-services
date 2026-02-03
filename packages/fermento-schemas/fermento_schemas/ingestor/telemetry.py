@@ -6,7 +6,7 @@ class TelemetrySchema(BaseModel):
     Schema for telemetry data validation.
     """
 
-    schema: str
+    schema: tuple[int, int, int]
     device_id: str
     message_id: str
     timestamp: str

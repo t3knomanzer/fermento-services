@@ -36,7 +36,7 @@ def on_message(topic, payload):
         # Send to api
         try:
             response = api_client.create_resource(
-                "feeding-samples", feeding_sample.model_dump()
+                "feeding-sample", feeding_sample.model_dump()
             )
             print(f"Feeding sample created: {response}")
         except HTTPError as e:
@@ -55,8 +55,6 @@ subscriber.add_on_message_callback(on_message)
 # ------------------------------------------------------
 # FastAPI Application Setup
 # ------------------------------------------------------
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """

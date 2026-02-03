@@ -13,12 +13,12 @@
 			"path": "mosquitto"
 		},
 		{
-			"name": "api",
-			"path": "api"
-		},
-		{
 			"name": "ingestor",
 			"path": "ingestor"
+		},
+		{
+			"name": "api",
+			"path": "api"
 		},
 		{
 			"name": "retriever",
@@ -41,6 +41,7 @@
 			"path": "frontend"
 		},
 		{
+			"name": "packages",
 			"path": "packages"
 		}
 	],

@@ -6,7 +6,7 @@ from datetime import datetime
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
 try:
-    client.connect("localhost")
+    client.connect("192.168.8.5", 1883, 60)
 except Exception as e:
     print(f"Could not connect to MQTT broker: {e}")
 

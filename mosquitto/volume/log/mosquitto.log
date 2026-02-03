@@ -1,0 +1,241 @@
+1770065406: New connection from 172.18.0.1:35154 on port 1883.
+1770065406: New client connected from 172.18.0.1:35154 as auto-DBF4CAC7-0826-1B7A-0496-35569A64596C (p4, c1, k60).
+1770065406: auto-DBF4CAC7-0826-1B7A-0496-35569A64596C 0 fermento/+/telemetry
+1770065419: New connection from 172.18.0.1:34246 on port 1883.
+1770065420: New client connected from 172.18.0.1:34246 as 80b54ed963a8 (p4, c1, k0).
+1770065420: Client 80b54ed963a8 disconnected.
+1770065480: New connection from 172.18.0.1:39816 on port 1883.
+1770065481: New client connected from 172.18.0.1:39816 as 80b54ed963a8 (p4, c1, k0).
+1770065481: Client 80b54ed963a8 disconnected.
+1770065526: Client mqtt-analyzer-z1hdwFYJ closed its connection.
+1770065792: New connection from 172.18.0.1:40606 on port 1883.
+1770065792: New client connected from 172.18.0.1:40606 as 80b54ed963a8 (p4, c1, k0).
+1770065793: 80b54ed963a8 0 fermento/#
+1770065827: Client 80b54ed963a8 closed its connection.
+1770065934: New connection from 172.18.0.1:55294 on port 1883.
+1770065935: New client connected from 172.18.0.1:55294 as 80b54ed963a8 (p4, c1, k0).
+1770065935: 80b54ed963a8 0 fermento/#
+1770066141: Client 80b54ed963a8 closed its connection.
+1770066182: New connection from 172.18.0.1:57380 on port 1883.
+1770066182: New client connected from 172.18.0.1:57380 as 80b54ed963a8 (p4, c1, k0).
+1770066182: 80b54ed963a8 0 fermento/#
+1770066223: Client auto-DBF4CAC7-0826-1B7A-0496-35569A64596C has exceeded timeout, disconnecting.
+1770066412: Client 80b54ed963a8 closed its connection.
+1770066426: New connection from 172.18.0.1:40030 on port 1883.
+1770066426: New client connected from 172.18.0.1:40030 as 80b54ed963a8 (p4, c1, k0).
+1770066426: Client 80b54ed963a8 disconnected.
+1770066833: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1770074337: New connection from 172.18.0.1:42220 on port 1883.
+1770074337: New client connected from 172.18.0.1:42220 as auto-0E3D64C8-BB8B-BBA2-431D-5999F40553DB (p4, c1, k60).
+1770074337: auto-0E3D64C8-BB8B-BBA2-431D-5999F40553DB 0 fermento/+/telemetry
+1770074571: Client auto-0E3D64C8-BB8B-BBA2-431D-5999F40553DB closed its connection.
+1770074582: New connection from 172.18.0.1:36050 on port 1883.
+1770074582: New client connected from 172.18.0.1:36050 as auto-AE7494F0-CBF6-8F5D-4A0D-BD78DB75930D (p4, c1, k60).
+1770074582: auto-AE7494F0-CBF6-8F5D-4A0D-BD78DB75930D 0 fermento/+/telemetry
+1770075045: New connection from 172.18.0.1:60808 on port 1883.
+1770075045: New client connected from 172.18.0.1:60808 as 80b54ed963a8 (p4, c1, k0).
+1770075045: 80b54ed963a8 0 fermento/#
+1770075045: Client 80b54ed963a8 disconnected.
+1770075113: New connection from 172.18.0.1:38278 on port 1883.
+1770075114: New client connected from 172.18.0.1:38278 as 80b54ed963a8 (p4, c1, k0).
+1770075114: Client 80b54ed963a8 disconnected.
+1770075124: New connection from 172.18.0.1:41526 on port 1883.
+1770075125: New client connected from 172.18.0.1:41526 as 80b54ed963a8 (p4, c1, k0).
+1770075125: Client 80b54ed963a8 disconnected.
+1770075135: New connection from 172.18.0.1:57864 on port 1883.
+1770075136: New client connected from 172.18.0.1:57864 as 80b54ed963a8 (p4, c1, k0).
+1770075136: Client 80b54ed963a8 disconnected.
+1770075146: New connection from 172.18.0.1:37872 on port 1883.
+1770075146: New client connected from 172.18.0.1:37872 as 80b54ed963a8 (p4, c1, k0).
+1770075146: Client 80b54ed963a8 disconnected.
+1770075157: Client auto-AE7494F0-CBF6-8F5D-4A0D-BD78DB75930D has exceeded timeout, disconnecting.
+1770075157: New connection from 172.18.0.1:37592 on port 1883.
+1770075158: New client connected from 172.18.0.1:37592 as 80b54ed963a8 (p4, c1, k0).
+1770075158: Client 80b54ed963a8 disconnected.
+1770075169: New connection from 172.18.0.1:53812 on port 1883.
+1770075169: New client connected from 172.18.0.1:53812 as 80b54ed963a8 (p4, c1, k0).
+1770075169: Client 80b54ed963a8 disconnected.
+1770075180: New connection from 172.18.0.1:38720 on port 1883.
+1770075180: New client connected from 172.18.0.1:38720 as 80b54ed963a8 (p4, c1, k0).
+1770075180: Client 80b54ed963a8 disconnected.
+1770075190: New connection from 172.18.0.1:51678 on port 1883.
+1770075191: New client connected from 172.18.0.1:51678 as 80b54ed963a8 (p4, c1, k0).
+1770075191: Client 80b54ed963a8 disconnected.
+1770075740: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1770076009: New connection from 172.18.0.1:34514 on port 1883.
+1770076009: New client connected from 172.18.0.1:34514 as 80b54ed963a8 (p4, c1, k0).
+1770076009: 80b54ed963a8 0 fermento/#
+1770076009: Client 80b54ed963a8 disconnected.
+1770076032: New connection from 172.18.0.1:53932 on port 1883.
+1770076032: New client connected from 172.18.0.1:53932 as 80b54ed963a8 (p4, c1, k0).
+1770076033: Client 80b54ed963a8 disconnected.
+1770076043: New connection from 172.18.0.1:37010 on port 1883.
+1770076044: New client connected from 172.18.0.1:37010 as 80b54ed963a8 (p4, c1, k0).
+1770076044: Client 80b54ed963a8 disconnected.
+1770076054: New connection from 172.18.0.1:55604 on port 1883.
+1770076055: New client connected from 172.18.0.1:55604 as 80b54ed963a8 (p4, c1, k0).
+1770076055: Client 80b54ed963a8 disconnected.
+1770076067: New connection from 172.18.0.1:51512 on port 1883.
+1770076067: New client connected from 172.18.0.1:51512 as 80b54ed963a8 (p4, c1, k0).
+1770076067: Client 80b54ed963a8 disconnected.
+1770076070: New connection from 172.18.0.1:51520 on port 1883.
+1770076070: New client connected from 172.18.0.1:51520 as auto-90023B88-75D6-0C82-AD9A-29ED075195CC (p4, c1, k60).
+1770076070: auto-90023B88-75D6-0C82-AD9A-29ED075195CC 0 fermento/+/telemetry
+1770076077: New connection from 172.18.0.1:38068 on port 1883.
+1770076078: New client connected from 172.18.0.1:38068 as 80b54ed963a8 (p4, c1, k0).
+1770076078: Client 80b54ed963a8 disconnected.
+1770076088: New connection from 172.18.0.1:49910 on port 1883.
+1770076088: New client connected from 172.18.0.1:49910 as 80b54ed963a8 (p4, c1, k0).
+1770076088: Client 80b54ed963a8 disconnected.
+1770076093: Client auto-90023B88-75D6-0C82-AD9A-29ED075195CC closed its connection.
+1770076099: New connection from 172.18.0.1:37866 on port 1883.
+1770076099: New client connected from 172.18.0.1:37866 as 80b54ed963a8 (p4, c1, k0).
+1770076101: Client 80b54ed963a8 closed its connection.
+1770076499: New connection from 172.18.0.1:49500 on port 1883.
+1770076499: New client connected from 172.18.0.1:49500 as auto-1D102F92-FD1C-9EE3-9328-4CA9D152498F (p4, c1, k60).
+1770076499: auto-1D102F92-FD1C-9EE3-9328-4CA9D152498F 0 fermento/+/telemetry
+1770076517: New connection from 172.18.0.1:38526 on port 1883.
+1770076517: New client connected from 172.18.0.1:38526 as 80b54ed963a8 (p4, c1, k0).
+1770076517: 80b54ed963a8 0 fermento/#
+1770076517: Client 80b54ed963a8 disconnected.
+1770076555: New connection from 172.18.0.1:42048 on port 1883.
+1770076555: New client connected from 172.18.0.1:42048 as 80b54ed963a8 (p4, c1, k0).
+1770076555: Client 80b54ed963a8 disconnected.
+1770076566: New connection from 172.18.0.1:37328 on port 1883.
+1770076566: New client connected from 172.18.0.1:37328 as 80b54ed963a8 (p4, c1, k0).
+1770076566: Client 80b54ed963a8 disconnected.
+1770076576: New connection from 172.18.0.1:58330 on port 1883.
+1770076576: New client connected from 172.18.0.1:58330 as 80b54ed963a8 (p4, c1, k0).
+1770076576: Client 80b54ed963a8 disconnected.
+1770076587: New connection from 172.18.0.1:37878 on port 1883.
+1770076587: New client connected from 172.18.0.1:37878 as 80b54ed963a8 (p4, c1, k0).
+1770076587: Client 80b54ed963a8 disconnected.
+1770076598: New connection from 172.18.0.1:33502 on port 1883.
+1770076598: New client connected from 172.18.0.1:33502 as 80b54ed963a8 (p4, c1, k0).
+1770076598: Client 80b54ed963a8 disconnected.
+1770076609: New connection from 172.18.0.1:43756 on port 1883.
+1770076609: New client connected from 172.18.0.1:43756 as 80b54ed963a8 (p4, c1, k0).
+1770076609: Client 80b54ed963a8 disconnected.
+1770076619: New connection from 172.18.0.1:52116 on port 1883.
+1770076620: New client connected from 172.18.0.1:52116 as 80b54ed963a8 (p4, c1, k0).
+1770076620: Client 80b54ed963a8 disconnected.
+1770076630: New connection from 172.18.0.1:53392 on port 1883.
+1770076630: New client connected from 172.18.0.1:53392 as 80b54ed963a8 (p4, c1, k0).
+1770076630: Client 80b54ed963a8 disconnected.
+1770076641: New connection from 172.18.0.1:34638 on port 1883.
+1770076641: New client connected from 172.18.0.1:34638 as 80b54ed963a8 (p4, c1, k0).
+1770076641: Client 80b54ed963a8 disconnected.
+1770076652: New connection from 172.18.0.1:45280 on port 1883.
+1770076652: New client connected from 172.18.0.1:45280 as 80b54ed963a8 (p4, c1, k0).
+1770076652: Client 80b54ed963a8 disconnected.
+1770076662: New connection from 172.18.0.1:59098 on port 1883.
+1770076662: New client connected from 172.18.0.1:59098 as 80b54ed963a8 (p4, c1, k0).
+1770076662: Client 80b54ed963a8 disconnected.
+1770076673: New connection from 172.18.0.1:58026 on port 1883.
+1770076673: New client connected from 172.18.0.1:58026 as 80b54ed963a8 (p4, c1, k0).
+1770076673: Client 80b54ed963a8 disconnected.
+1770076684: New connection from 172.18.0.1:41500 on port 1883.
+1770076684: New client connected from 172.18.0.1:41500 as 80b54ed963a8 (p4, c1, k0).
+1770076684: Client 80b54ed963a8 disconnected.
+1770076694: New connection from 172.18.0.1:53178 on port 1883.
+1770076695: New client connected from 172.18.0.1:53178 as 80b54ed963a8 (p4, c1, k0).
+1770076695: Client 80b54ed963a8 disconnected.
+1770076705: New connection from 172.18.0.1:36104 on port 1883.
+1770076705: New client connected from 172.18.0.1:36104 as 80b54ed963a8 (p4, c1, k0).
+1770076705: Client 80b54ed963a8 disconnected.
+1770076716: New connection from 172.18.0.1:42144 on port 1883.
+1770076716: New client connected from 172.18.0.1:42144 as 80b54ed963a8 (p4, c1, k0).
+1770076716: Client 80b54ed963a8 disconnected.
+1770076727: New connection from 172.18.0.1:45968 on port 1883.
+1770076727: New client connected from 172.18.0.1:45968 as 80b54ed963a8 (p4, c1, k0).
+1770076727: Client 80b54ed963a8 disconnected.
+1770076737: New connection from 172.18.0.1:52630 on port 1883.
+1770076737: New client connected from 172.18.0.1:52630 as 80b54ed963a8 (p4, c1, k0).
+1770076737: Client 80b54ed963a8 disconnected.
+1770076748: New connection from 172.18.0.1:46696 on port 1883.
+1770076748: New client connected from 172.18.0.1:46696 as 80b54ed963a8 (p4, c1, k0).
+1770076748: Client 80b54ed963a8 disconnected.
+1770076754: Client auto-1D102F92-FD1C-9EE3-9328-4CA9D152498F has exceeded timeout, disconnecting.
+1770076759: New connection from 172.18.0.1:37968 on port 1883.
+1770076759: New client connected from 172.18.0.1:37968 as 80b54ed963a8 (p4, c1, k0).
+1770076759: Client 80b54ed963a8 disconnected.
+1770076770: New connection from 172.18.0.1:59162 on port 1883.
+1770076770: New client connected from 172.18.0.1:59162 as 80b54ed963a8 (p4, c1, k0).
+1770076770: Client 80b54ed963a8 disconnected.
+1770076780: New connection from 172.18.0.1:59026 on port 1883.
+1770076780: New client connected from 172.18.0.1:59026 as 80b54ed963a8 (p4, c1, k0).
+1770076780: Client 80b54ed963a8 disconnected.
+1770076791: New connection from 172.18.0.1:57466 on port 1883.
+1770076791: New client connected from 172.18.0.1:57466 as 80b54ed963a8 (p4, c1, k0).
+1770076791: Client 80b54ed963a8 disconnected.
+1770076802: New connection from 172.18.0.1:43682 on port 1883.
+1770076802: New client connected from 172.18.0.1:43682 as 80b54ed963a8 (p4, c1, k0).
+1770076802: Client 80b54ed963a8 disconnected.
+1770076813: New connection from 172.18.0.1:52440 on port 1883.
+1770076813: New client connected from 172.18.0.1:52440 as 80b54ed963a8 (p4, c1, k0).
+1770076813: Client 80b54ed963a8 disconnected.
+1770076823: New connection from 172.18.0.1:37178 on port 1883.
+1770076823: New client connected from 172.18.0.1:37178 as 80b54ed963a8 (p4, c1, k0).
+1770076823: Client 80b54ed963a8 disconnected.
+1770076831: New connection from 172.18.0.1:46650 on port 1883.
+1770076831: New client connected from 172.18.0.1:46650 as auto-EF7BA40F-87B7-0270-E2E7-7C50E9DB3581 (p4, c1, k60).
+1770076831: auto-EF7BA40F-87B7-0270-E2E7-7C50E9DB3581 0 fermento/+/telemetry
+1770076834: New connection from 172.18.0.1:46664 on port 1883.
+1770076834: New client connected from 172.18.0.1:46664 as 80b54ed963a8 (p4, c1, k0).
+1770076834: Client 80b54ed963a8 disconnected.
+1770076845: New connection from 172.18.0.1:59458 on port 1883.
+1770076845: New client connected from 172.18.0.1:59458 as 80b54ed963a8 (p4, c1, k0).
+1770076845: Client 80b54ed963a8 disconnected.
+1770076856: New connection from 172.18.0.1:43388 on port 1883.
+1770076856: New client connected from 172.18.0.1:43388 as 80b54ed963a8 (p4, c1, k0).
+1770076856: Client 80b54ed963a8 disconnected.
+1770076866: New connection from 172.18.0.1:43542 on port 1883.
+1770076866: New client connected from 172.18.0.1:43542 as 80b54ed963a8 (p4, c1, k0).
+1770076867: Client 80b54ed963a8 disconnected.
+1770076877: Client auto-EF7BA40F-87B7-0270-E2E7-7C50E9DB3581 closed its connection.
+1770076877: New connection from 172.18.0.1:50072 on port 1883.
+1770076877: New client connected from 172.18.0.1:50072 as 80b54ed963a8 (p4, c1, k0).
+1770076877: Client 80b54ed963a8 disconnected.
+1770076888: New connection from 172.18.0.1:47226 on port 1883.
+1770076888: New client connected from 172.18.0.1:47226 as 80b54ed963a8 (p4, c1, k0).
+1770076888: Client 80b54ed963a8 disconnected.
+1770076899: New connection from 172.18.0.1:42906 on port 1883.
+1770076899: New client connected from 172.18.0.1:42906 as 80b54ed963a8 (p4, c1, k0).
+1770076899: Client 80b54ed963a8 disconnected.
+1770076904: New connection from 172.18.0.1:42910 on port 1883.
+1770076904: New client connected from 172.18.0.1:42910 as auto-864CD347-BEB1-0CBC-E04C-936878E77F28 (p4, c1, k60).
+1770076904: auto-864CD347-BEB1-0CBC-E04C-936878E77F28 0 fermento/+/telemetry
+1770076909: New connection from 172.18.0.1:51032 on port 1883.
+1770076910: New client connected from 172.18.0.1:51032 as 80b54ed963a8 (p4, c1, k0).
+1770076910: Client 80b54ed963a8 disconnected.
+1770076920: New connection from 172.18.0.1:44144 on port 1883.
+1770076920: New client connected from 172.18.0.1:44144 as 80b54ed963a8 (p4, c1, k0).
+1770076920: Client 80b54ed963a8 disconnected.
+1770076931: New connection from 172.18.0.1:49084 on port 1883.
+1770076931: New client connected from 172.18.0.1:49084 as 80b54ed963a8 (p4, c1, k0).
+1770076931: Client 80b54ed963a8 disconnected.
+1770076942: New connection from 172.18.0.1:37682 on port 1883.
+1770076942: New client connected from 172.18.0.1:37682 as 80b54ed963a8 (p4, c1, k0).
+1770076942: Client 80b54ed963a8 disconnected.
+1770076952: New connection from 172.18.0.1:33470 on port 1883.
+1770076952: New client connected from 172.18.0.1:33470 as 80b54ed963a8 (p4, c1, k0).
+1770076952: Client 80b54ed963a8 disconnected.
+1770076963: New connection from 172.18.0.1:53628 on port 1883.
+1770076963: New client connected from 172.18.0.1:53628 as 80b54ed963a8 (p4, c1, k0).
+1770076963: Client 80b54ed963a8 disconnected.
+1770076974: New connection from 172.18.0.1:48270 on port 1883.
+1770076974: New client connected from 172.18.0.1:48270 as 80b54ed963a8 (p4, c1, k0).
+1770076974: Client 80b54ed963a8 disconnected.
+1770076985: New connection from 172.18.0.1:52448 on port 1883.
+1770076985: New client connected from 172.18.0.1:52448 as 80b54ed963a8 (p4, c1, k0).
+1770076985: Client 80b54ed963a8 disconnected.
+1770076997: New connection from 172.18.0.1:33632 on port 1883.
+1770076997: New client connected from 172.18.0.1:33632 as 80b54ed963a8 (p4, c1, k0).
+1770076997: Client 80b54ed963a8 disconnected.
+1770077008: New connection from 172.18.0.1:48390 on port 1883.
+1770077008: New client connected from 172.18.0.1:48390 as 80b54ed963a8 (p4, c1, k0).
+1770077008: Client 80b54ed963a8 disconnected.
+1770077019: New connection from 172.18.0.1:49168 on port 1883.
+1770077019: New client connected from 172.18.0.1:49168 as 80b54ed963a8 (p4, c1, k0).
+1770077019: Client 80b54ed963a8 disconnected.
+1770077043: Client auto-864CD347-BEB1-0CBC-E04C-936878E77F28 closed its connection.
