@@ -21,10 +21,6 @@
 			"path": "api"
 		},
 		{
-			"name": "retriever",
-			"path": "retriever"
-		},
-		{
 			"name": "processor",
 			"path": "processor"
 		},
