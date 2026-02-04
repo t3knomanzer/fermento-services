@@ -96,7 +96,7 @@ class MqttSubscriber:
 
     def on_connect(self, client, userdata, flags, reason_code, properties):
         self._connected = True
-        print(f"Connected with result code {reason_code}")
+        print(f"MQTT Connected with result code {reason_code}")
 
         # Re-subscribe on reconnect
         for topic in self._subscribe_topics:
@@ -104,7 +104,7 @@ class MqttSubscriber:
 
     def on_disconnect(self, client, userdata, reason_code, properties):
         self._connected = False
-        print(f"Disconnected with reason code {reason_code}")
+        print(f"MQTT Disconnected with reason code {reason_code}")
 
     def on_message(self, client, userdata, msg):
         if self._on_message_callbacks:
