@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx
+    image: fermento-nginx
     container_name: fermento-nginx
     build: ../nginx
     restart: unless-stopped
@@ -15,12 +15,12 @@ services:
       - api
 
   mosquitto:
-    image: eclipse-mosquitto:latest
+    image: fermento-mosquitto
+    build: ../mosquitto
     container_name: fermento-mosquitto
     environment:
       - TZ=Europe/Madrid
     volumes:
-      - ../mosquitto/volume/config:/mosquitto/config
       - ../mosquitto/volume/data:/mosquitto/data
       - ../mosquitto/volume/log:/mosquitto/log
     ports:
