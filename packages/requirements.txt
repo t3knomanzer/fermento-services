@@ -1,0 +1,3 @@
+-e fermento_service_schemas
+-e fermento_embedded_schemas
+pydantic==2.12.5

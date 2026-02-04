@@ -2,8 +2,6 @@
 """
 Schemas module for starter data validation and serialization.
 """
-
-
 from datetime import date
 from typing import List, Optional
 
