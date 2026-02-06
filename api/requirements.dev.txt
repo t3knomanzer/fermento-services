@@ -6,4 +6,4 @@ aiofiles==24.1.0
 alembic==1.15.1
 psycopg2-binary==2.9.10
 
--e ../packages/fermento-schemas
+-e ../packages/fermento-service-schemas

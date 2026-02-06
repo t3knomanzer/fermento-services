@@ -6,7 +6,7 @@ from lib.models import JarModel
 from lib.repositories.jar_repository import (
     JarRepository,
 )
-from fermento_schemas.api.jar import JarCreateSchema, JarSchema, JarUpdateSchema
+from fermento_service_schemas.api.jar import JarCreateSchema, JarSchema, JarUpdateSchema
 from lib.services.base_service import BaseCrudService
 
 

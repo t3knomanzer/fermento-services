@@ -6,7 +6,7 @@ API router module for actor operations, providing endpoints for creating, readin
 
 from lib.repositories.flour_repository import FlourRepository
 from lib.routers.base_router import crud_router
-from fermento_schemas.api.flour import (
+from fermento_service_schemas.api.flour import (
     FlourCreateSchema,
     FlourSchema,
     FlourUpdateSchema,

@@ -11,7 +11,7 @@ class JarSchema(BaseSchema):
     message_id: str
     timestamp: str
     name: str
-    distance: float
+    height: float
 
     @classmethod
     def _get_fields(cls) -> list[str]:
@@ -21,5 +21,5 @@ class JarSchema(BaseSchema):
             "message_id",
             "timestamp",
             "name",
-            "distance",
+            "height",
         ]

@@ -102,7 +102,7 @@ class MqttSubscriber:
         for topic in self._subscribe_topics:
             client.subscribe(topic)
 
-    def on_disconnect(self, client, userdata, reason_code, properties):
+    def on_disconnect(self, client, userdata, reason_code, properties, *args, **kwargs):
         self._connected = False
         print(f"MQTT Disconnected with reason code {reason_code}")
 

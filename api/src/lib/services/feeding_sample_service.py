@@ -6,7 +6,7 @@ from lib.models import FeedingSampleModel
 from lib.repositories.feeding_sample_repository import (
     FeedingSampleRepository,
 )
-from fermento_schemas.api.feeding_sample import (
+from fermento_service_schemas.api.feeding_sample import (
     FeedingSampleCreateSchema,
     FeedingSampleSchema,
     FeedingSampleUpdateSchema,

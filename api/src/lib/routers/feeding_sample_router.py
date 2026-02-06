@@ -6,7 +6,7 @@ API router module for actor operations, providing endpoints for creating, readin
 
 from lib.repositories.feeding_sample_repository import FeedingSampleRepository
 from lib.routers.base_router import crud_router
-from fermento_schemas.api.feeding_sample import (
+from fermento_service_schemas.api.feeding_sample import (
     FeedingSampleCreateSchema,
     FeedingSampleSchema,
     FeedingSampleUpdateSchema,

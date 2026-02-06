@@ -6,7 +6,7 @@ from lib.models import FeedingEventModel
 from lib.repositories.feeding_event_repository import (
     FeedingEventRepository,
 )
-from fermento_schemas.api.feeding_event import (
+from fermento_service_schemas.api.feeding_event import (
     FeedingEventCreateSchema,
     FeedingEventSchema,
     FeedingEventUpdateSchema,

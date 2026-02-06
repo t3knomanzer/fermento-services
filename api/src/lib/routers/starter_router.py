@@ -6,7 +6,7 @@ API router module for actor operations, providing endpoints for creating, readin
 
 from lib.repositories.starter_repository import StarterRepository
 from lib.routers.base_router import crud_router
-from fermento_schemas.api.starter import (
+from fermento_service_schemas.api.starter import (
     StarterCreateSchema,
     StarterSchema,
     StarterUpdateSchema,

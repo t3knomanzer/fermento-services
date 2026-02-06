@@ -6,7 +6,7 @@ from lib.models import FlourModel
 from lib.repositories.flour_repository import (
     FlourRepository,
 )
-from fermento_schemas.api.flour import (
+from fermento_service_schemas.api.flour import (
     FlourCreateSchema,
     FlourSchema,
     FlourUpdateSchema,

@@ -21,7 +21,6 @@ api_client = APIClient(base_url=config.API_ADDRESS)
 # ------------------------------------------------------
 def on_message(topic, payload):
     print(f"Received {topic}: {payload}")
-
     if topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_CREATE, topic):
         print("Topic found, processing data...")
         # Validate pydantic model
