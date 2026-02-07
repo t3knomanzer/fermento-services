@@ -5,9 +5,13 @@ Schemas module for starter data validation and serialization.
 
 
 from datetime import date, datetime
-from typing import List, Optional
+from typing import Optional
 
 from pydantic import BaseModel
+
+from fermento_service_schemas.api.flour_blend import FlourBlendSchema
+from fermento_service_schemas.api.jar import JarSchema
+from fermento_service_schemas.api.starter import StarterSchema
 
 
 class FeedingEventSchema(BaseModel):
@@ -51,3 +55,13 @@ class FeedingEventUpdateSchema(BaseModel):
     flour_ratio: Optional[float] = None
     flour_blend_id: Optional[int] = None
     jar_id: Optional[int] = None
+
+
+class FeedingEventExpandedSchema(FeedingEventSchema):
+    """
+    Feeding event schema with nested related objects for expanded reads.
+    """
+
+    starter: Optional[StarterSchema] = None
+    flour_blend: Optional[FlourBlendSchema] = None
+    jar: Optional[JarSchema] = None

@@ -3,8 +3,7 @@
 Module defining the database models for the application.
 """
 
-from datetime import date
-from sqlalchemy import Boolean, Date, Float, ForeignKey, String, Integer, func
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String, Integer, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -21,7 +20,7 @@ class StarterModel(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
-    birth_date: Mapped[date] = mapped_column(Date, server_default=func.now())
+    birth_date: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
 
 
 class JarModel(BaseModel):
