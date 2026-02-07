@@ -19,7 +19,7 @@ api_client = APIClient(base_url=config.API_ADDRESS)
 # ------------------------------------------------------
 # MQTT Subscriber Setup
 # ------------------------------------------------------
-def on_message(topic, payload):
+def on_mqtt_message_received(topic, payload):
     print(f"Received {topic}: {payload}")
     if topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_CREATE, topic):
         print("Topic found, processing data...")
@@ -64,7 +64,7 @@ def on_message(topic, payload):
     elif topic_matches_sub(config.TOPIC_FEEDING_EVENTS_REQUEST, topic):
         print("Topic found, processing data...")
         try:
-            response = api_client.list_resources("feeding-events")
+            response = api_client.list_resources("feeding-events/expanded")
         except HTTPError as e:
             print(f"Error listing feeding events: {e}")
             return
@@ -79,7 +79,7 @@ subscriber = MqttSubscriber(config.BROKER_ADDRESS, int(config.BROKER_PORT))
 subscriber.add_subscribe_topic(config.TOPIC_FEEDING_SAMPLES_CREATE)
 subscriber.add_subscribe_topic(config.TOPIC_FEEDING_EVENTS_REQUEST)
 subscriber.add_subscribe_topic(config.TOPIC_JARS_CREATE)
-subscriber.add_on_message_callback(on_message)
+subscriber.add_on_message_callback(on_mqtt_message_received)
 
 
 # ------------------------------------------------------

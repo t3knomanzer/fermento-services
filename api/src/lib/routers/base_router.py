@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from lib.database import get_session
 from lib.exceptions import DatabaseError
 from lib.logging import LogLevel, logger
-from lib.models import BaseModel
+from pydantic import BaseModel
 from lib.repositories.base_repository import BaseCrudRepository
 from lib.services.base_service import BaseCrudService
 from lib.utils.decorators import time_it
@@ -23,7 +23,7 @@ def crud_router(
     update_schema: Type[BaseModel],
     schema: Type[BaseModel],
     include_routes: List[str] = ["create", "read", "update", "delete", "read_all"],
-) -> None:
+) -> APIRouter:
     router = APIRouter(tags=[prefix[1:]])
 
     if "create" in include_routes:
@@ -96,4 +96,4 @@ def crud_router(
                 raise HTTPException(500, str(e.__cause__ or e))
             return schemas
 
-        return router
+    return router

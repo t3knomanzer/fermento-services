@@ -2,7 +2,7 @@
 """
 Schemas module for starter data validation and serialization.
 """
-from datetime import date
+from datetime import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ class StarterSchema(BaseModel):
 
     id: int
     name: str
-    birth_date: date
+    birth_date: datetime
 
 
 class StarterCreateSchema(BaseModel):
@@ -24,7 +24,7 @@ class StarterCreateSchema(BaseModel):
     """
 
     name: str
-    birth_date: date
+    birth_date: datetime
 
 
 class StarterUpdateSchema(BaseModel):
@@ -33,4 +33,4 @@ class StarterUpdateSchema(BaseModel):
     """
 
     name: Optional[str]
-    birth_date: Optional[date]
+    birth_date: Optional[datetime]
