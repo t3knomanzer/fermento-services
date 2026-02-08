@@ -37,8 +37,7 @@
 			"path": "frontend"
 		},
 		{
-			"name": "packages",
-			"path": "packages"
+			"path": "../fermento-schemas"
 		}
 	],
 	"settings": {}

@@ -7,5 +7,5 @@ aiofiles==24.1.0
 alembic==1.15.1
 psycopg2-binary==2.9.10
 requests==2.32.5
-fermento-embedded-schemas @ git+https://github.com/t3knomanzer/fermento-services.git@master#subdirectory=packages/fermento-embedded-schemas
-fermento-service-schemas @ git+https://github.com/t3knomanzer/fermento-services.git@master#subdirectory=packages/fermento-service-schemas
+fermento-embedded-schemas @ git+https://github.com/t3knomanzer/fermento-schemas.git@main#subdirectory=fermento-embedded-schemas
+fermento-service-schemas @ git+https://github.com/t3knomanzer/fermento-schemas.git@main#subdirectory=fermento-service-schemas

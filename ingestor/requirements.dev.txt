@@ -4,5 +4,5 @@ pydantic-settings==2.7.1
 pydantic==2.10.6
 requests==2.32.5
 
--e ../packages/fermento-service-schemas
--e ../packages/fermento-embedded-schemas
+-e ../../fermento-schemas/fermento-service-schemas
+-e ../../fermento-schemas/fermento-embedded-schemas

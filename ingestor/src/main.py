@@ -1,13 +1,13 @@
 import json
 from urllib.error import HTTPError
 from fastapi.concurrency import asynccontextmanager
+from pydantic_core import ValidationError
 import config
 from fastapi import FastAPI
 
 from lib.api.client import APIClient
 from lib.mqtt.client import MqttSubscriber
 from lib.mqtt.utils import topic_matches_sub
-import fermento_embedded_schemas as mcu
 import fermento_service_schemas.api as api
 
 # ------------------------------------------------------
@@ -24,16 +24,13 @@ def on_mqtt_message_received(topic, payload):
     if topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_CREATE, topic):
         print("Topic found, processing data...")
         # Validate pydantic model
-        feeding_sample = api.FeedingSampleCreateSchema.model_validate_json(payload)
-
-        # Convert to api schema
-        feeding_sample_create = api.FeedingSampleCreateSchema(
-            feeding_event_id=feeding_sample.feeding_event_id,
-            temperature=feeding_sample.temperature,
-            humidity=feeding_sample.humidity,
-            co2=feeding_sample.co2,
-            distance=feeding_sample.distance,
-        )
+        try:
+            feeding_sample_create = api.FeedingSampleCreateSchema.model_validate_json(
+                payload
+            )
+        except ValidationError as e:
+            print(f"Error validating feeding sample: {e}")
+            return
 
         # Send to api
         try:
@@ -47,12 +44,11 @@ def on_mqtt_message_received(topic, payload):
     elif topic_matches_sub(config.TOPIC_JARS_CREATE, topic):
         print("Topic found, processing data...")
         # Process jar creation data
-        jar = api.JarCreateSchema.model_validate_json(payload)
-
-        jar_create = api.JarCreateSchema(
-            name=jar.name,
-            height=int(jar.height),
-        )
+        try:
+            jar_create = api.JarCreateSchema.model_validate_json(payload)
+        except ValidationError as e:
+            print(f"Error validating jar: {e}")
+            return
 
         # Send to api
         try:
