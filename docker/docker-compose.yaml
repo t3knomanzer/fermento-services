@@ -1,19 +1,4 @@
 services:
-  nginx:
-    image: fermento-nginx
-    container_name: fermento-nginx
-    build: ../nginx
-    restart: unless-stopped
-    ports:
-      - 80:80
-    volumes:
-      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - services
-    depends_on:
-      - frontend
-      - api
-
   mosquitto:
     image: fermento-mosquitto
     build: ../mosquitto
@@ -69,8 +54,8 @@ services:
     build: ../ingestor
     restart: unless-stopped
     environment:
-      - API_ADDRESS=http://localhost:8091
-      - BROKER_ADDRESS=localhost
+      - API_ADDRESS=http://api:8091
+      - BROKER_ADDRESS=mosquitto
       - BROKER_PORT=1883
       - TOPIC_FEEDING_SAMPLES_CREATE=fermento/+/feeding_samples/create
       - TOPIC_JARS_CREATE=fermento/+/jars/create
@@ -87,3 +72,4 @@ services:
 networks:
   services:
     driver: bridge
+    external: true

@@ -5,10 +5,6 @@
 			"path": "docker"
 		},
 		{
-			"name": "nginx",
-			"path": "nginx"
-		},
-		{
 			"name": "mosquitto",
 			"path": "mosquitto"
 		},
@@ -38,6 +34,9 @@
 		},
 		{
 			"path": "../fermento-schemas"
+		},
+		{
+			"path": "infra"
 		}
 	],
 	"settings": {}
