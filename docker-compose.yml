@@ -16,9 +16,8 @@ services:
       - edge-net
 
   nginx:
-    image: fermento-nginx
+    image: nginx:latest
     container_name: fermento-nginx
-    build: ./nginx
     restart: unless-stopped
     ports:
       - 80:80

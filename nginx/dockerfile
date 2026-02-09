@@ -1,8 +1,0 @@
-# Nginx gateway for techart.int.thatsnomoon.com
-# Author: Ruben Henares
-# Email: rhenares@thatsnomoon.com
-# Maintainers: Ruben Henares
-
-FROM nginx:latest
-
-COPY ./default.conf /etc/nginx/conf.d/default.conf
