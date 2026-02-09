@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: fermento
       POSTGRES_USER: fermento
-      POSTGRES_PASSWORD: pw123
+      POSTGRES_PASSWORD: pwko34M.ioPK09-!g_89
     volumes:
       - timescale_data:/var/lib/postgresql/data
       - ../database/db/init:/docker-entrypoint-initdb.d
@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
     environment:
       - API_ROOT_PATH=/src/data/
-      - API_DB_URL=postgresql+psycopg://fermento:pw123@db:5432/fermento
+      - API_DB_URL=postgresql+psycopg://fermento:pwko34M.ioPK09-!g_89@db:5432/fermento
       - API_LOG_LEVEL=DEBUG
     ports:
       - 8091:8091
