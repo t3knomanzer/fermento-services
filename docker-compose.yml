@@ -18,7 +18,7 @@ services:
   nginx:
     image: fermento-nginx
     container_name: fermento-nginx
-    build: ../nginx
+    build: ./nginx
     restart: unless-stopped
     ports:
       - 80:80
