@@ -31,15 +31,15 @@ services:
       - ingestor
 
   mosquitto:
-    image: fermento-mosquitto
+    image: eclipse-mosquitto:latest
     container_name: fermento-mosquitto
-    build: ./mosquitto
     restart: unless-stopped
     environment:
       - TZ=Europe/Madrid
     volumes:
-      - ./mosquitto/volume/data:/mosquitto/data
-      - ./mosquitto/volume/log:/mosquitto/log
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config
     ports:
       - 1883:1883
       - 9001:9001

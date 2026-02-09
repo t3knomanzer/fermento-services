@@ -1,10 +1,6 @@
 {
 	"folders": [
 		{
-			"name": "docker",
-			"path": "docker"
-		},
-		{
 			"name": "mosquitto",
 			"path": "mosquitto"
 		},
