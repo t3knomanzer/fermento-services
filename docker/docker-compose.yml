@@ -1,0 +1,115 @@
+services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: fermento-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fermento
+      POSTGRES_USER: fermento
+      POSTGRES_PASSWORD: pwko34M.ioPK09-!g_89
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ../database/db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - edge-net
+
+  nginx:
+    image: fermento-nginx
+    container_name: fermento-nginx
+    build: ../nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ../nginx/conf.d:/etc/nginx/conf.d:ro
+    networks:
+      - edge-net
+    depends_on:
+      - frontend
+      - api
+      - ingestor
+
+  mosquitto:
+    image: fermento-mosquitto
+    container_name: fermento-mosquitto
+    build: ../mosquitto
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Madrid
+    volumes:
+      - ../mosquitto/volume/data:/mosquitto/data
+      - ../mosquitto/volume/log:/mosquitto/log
+    ports:
+      - 1883:1883
+      - 9001:9001
+    networks:
+      - edge-net
+
+  frontend:
+    image: fermento-frontend
+    container_name: fermento-frontend
+    build: ../frontend
+    restart: unless-stopped
+    environment:
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ENABLESTATICSERVING=true
+      - STREAMLIT_SERVER_BASEURLPATH=/fermento/v1
+    ports:
+      - 8501:8501
+    networks:
+      - edge-net
+
+  api:
+    image: fermento-api
+    container_name: fermento-api
+    build: ../api
+    restart: unless-stopped
+    environment:
+      - API_ROOT_PATH=/src/data/
+      - API_DB_URL=postgresql+psycopg://fermento:pwko34M.ioPK09-!g_89@db:5432/fermento
+      - API_LOG_LEVEL=DEBUG
+    ports:
+      - 8091:8091
+    volumes:
+      - ../api/data/:/src/data/
+      - ../api/src/migrations/versions:/src/migrations/versions/
+    networks:
+      - edge-net
+    depends_on:
+      - db
+
+  ingestor:
+    image: fermento-ingestor
+    container_name: fermento-ingestor
+    build: ../ingestor
+    restart: unless-stopped
+    environment:
+      - API_ADDRESS=http://api:8091
+      - BROKER_ADDRESS=mosquitto
+      - BROKER_PORT=1883
+      - TOPIC_FEEDING_SAMPLES_CREATE=fermento/+/feeding_samples/create
+      - TOPIC_JARS_CREATE=fermento/+/jars/create
+      - TOPIC_FEEDING_EVENTS_REQUEST=fermento/+/feeding_events/request
+      - TOPIC_FEEDING_EVENTS_RECEIVE=fermento/feeding_events/receive
+    ports:
+      - 8092:8092
+    volumes:
+      - ../api/data/:/src/data/
+      - ../api/src/migrations/versions:/src/migrations/versions/
+    networks:
+      - edge-net
+    depends_on:
+      - mosquitto
+      - api
+
+volumes:
+  timescale_data:
+
+
+networks:
+  edge-net:
+    external: true
