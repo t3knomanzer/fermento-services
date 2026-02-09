@@ -23,7 +23,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../nginx/conf.d:/etc/nginx/conf.d:ro
     networks:
       - edge-net
     depends_on:
