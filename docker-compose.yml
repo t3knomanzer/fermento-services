@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: pwko34M.ioPK09-!g_89
     volumes:
       - timescale_data:/var/lib/postgresql/data
-      - ../database/db/init:/docker-entrypoint-initdb.d
+      - ./database/db/init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     networks:
@@ -23,7 +23,7 @@ services:
     ports:
       - 80:80
     volumes:
-      - ../nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
     networks:
       - edge-net
     depends_on:
@@ -34,13 +34,13 @@ services:
   mosquitto:
     image: fermento-mosquitto
     container_name: fermento-mosquitto
-    build: ../mosquitto
+    build: ./mosquitto
     restart: unless-stopped
     environment:
       - TZ=Europe/Madrid
     volumes:
-      - ../mosquitto/volume/data:/mosquitto/data
-      - ../mosquitto/volume/log:/mosquitto/log
+      - ./mosquitto/volume/data:/mosquitto/data
+      - ./mosquitto/volume/log:/mosquitto/log
     ports:
       - 1883:1883
       - 9001:9001
@@ -50,7 +50,7 @@ services:
   frontend:
     image: fermento-frontend
     container_name: fermento-frontend
-    build: ../frontend
+    build: ./frontend
     restart: unless-stopped
     environment:
       - STREAMLIT_SERVER_ADDRESS=0.0.0.0
@@ -66,7 +66,7 @@ services:
   api:
     image: fermento-api
     container_name: fermento-api
-    build: ../api
+    build: ./api
     restart: unless-stopped
     environment:
       - API_ROOT_PATH=/src/data/
@@ -75,8 +75,8 @@ services:
     ports:
       - 8091:8091
     volumes:
-      - ../api/data/:/src/data/
-      - ../api/src/migrations/versions:/src/migrations/versions/
+      - ./api/data/:/src/data/
+      - ./api/src/migrations/versions:/src/migrations/versions/
     networks:
       - edge-net
     depends_on:
@@ -85,7 +85,7 @@ services:
   ingestor:
     image: fermento-ingestor
     container_name: fermento-ingestor
-    build: ../ingestor
+    build: ./ingestor
     restart: unless-stopped
     environment:
       - API_ADDRESS=http://api:8091
@@ -98,8 +98,8 @@ services:
     ports:
       - 8092:8092
     volumes:
-      - ../api/data/:/src/data/
-      - ../api/src/migrations/versions:/src/migrations/versions/
+      - ./ingestor/data/:/src/data/
+      - ./ingestor/src/migrations/versions:/src/migrations/versions/
     networks:
       - edge-net
     depends_on:
