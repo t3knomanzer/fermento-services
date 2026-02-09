@@ -13,7 +13,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - services
+      - edge-net
 
   nginx:
     image: fermento-nginx
@@ -25,7 +25,7 @@ services:
     volumes:
       - ../nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
-      - services
+      - edge-net
     depends_on:
       - frontend
       - api
@@ -45,7 +45,7 @@ services:
       - 1883:1883
       - 9001:9001
     networks:
-      - services
+      - edge-net
 
   frontend:
     image: fermento-frontend
@@ -61,7 +61,7 @@ services:
     ports:
       - 8501:8501
     networks:
-      - services
+      - edge-net
 
   api:
     image: fermento-api
@@ -78,7 +78,7 @@ services:
       - ../api/data/:/src/data/
       - ../api/src/migrations/versions:/src/migrations/versions/
     networks:
-      - services
+      - edge-net
     depends_on:
       - db
 
@@ -101,7 +101,7 @@ services:
       - ../api/data/:/src/data/
       - ../api/src/migrations/versions:/src/migrations/versions/
     networks:
-      - services
+      - edge-net
     depends_on:
       - mosquitto
       - api
@@ -111,5 +111,5 @@ volumes:
 
 
 networks:
-  services:
-    driver: bridge
+  edge-net:
+    external: true
