@@ -1,8 +1,41 @@
 services:
+  db:
+    image: timescale/timescaledb:latest-pg16
+    container_name: fermento-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fermento
+      POSTGRES_USER: fermento
+      POSTGRES_PASSWORD: pw123
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ../database/db/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - services
+
+  nginx:
+    image: fermento-nginx
+    container_name: fermento-nginx
+    build: ../nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ../nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - services
+    depends_on:
+      - frontend
+      - api
+      - ingestor
+
   mosquitto:
     image: fermento-mosquitto
-    build: ../mosquitto
     container_name: fermento-mosquitto
+    build: ../mosquitto
+    restart: unless-stopped
     environment:
       - TZ=Europe/Madrid
     volumes:
@@ -13,7 +46,6 @@ services:
       - 9001:9001
     networks:
       - services
-    restart: unless-stopped
 
   frontend:
     image: fermento-frontend
@@ -38,7 +70,7 @@ services:
     restart: unless-stopped
     environment:
       - API_ROOT_PATH=/src/data/
-      - API_DB_URL=sqlite:////src/data/database.db
+      - API_DB_URL=postgresql+psycopg://fermento:pw123@db:5432/fermento
       - API_LOG_LEVEL=DEBUG
     ports:
       - 8091:8091
@@ -47,6 +79,8 @@ services:
       - ../api/src/migrations/versions:/src/migrations/versions/
     networks:
       - services
+    depends_on:
+      - db
 
   ingestor:
     image: fermento-ingestor
@@ -68,8 +102,14 @@ services:
       - ../api/src/migrations/versions:/src/migrations/versions/
     networks:
       - services
+    depends_on:
+      - mosquitto
+      - api
+
+volumes:
+  timescale_data:
+
 
 networks:
   services:
     driver: bridge
-    external: true

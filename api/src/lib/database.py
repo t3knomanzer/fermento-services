@@ -14,7 +14,11 @@ from lib.config import Config
 from lib.models import BaseModel
 
 _engine = create_engine(
-    Config().db_url, connect_args=Config().db_connect_args, echo=False
+    Config().db_url,
+    connect_args=Config().db_connect_args,
+    pool_size=5,
+    max_overflow=10,
+    pool_pre_ping=True,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
 

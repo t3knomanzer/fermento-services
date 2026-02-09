@@ -4,6 +4,6 @@ pydantic-settings==2.7.1
 pydantic==2.10.6
 aiofiles==24.1.0
 alembic==1.15.1
-psycopg2-binary==2.9.10
+psycopg[binary]==3.3.2
 
 -e ../../fermento-schemas/fermento-service-schemas

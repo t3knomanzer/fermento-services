@@ -20,7 +20,10 @@ class StarterModel(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
-    birth_date: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+    birthdate: Mapped[DateTime] = mapped_column(DateTime(timezone=True))
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class JarModel(BaseModel):
@@ -29,6 +32,9 @@ class JarModel(BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     height: Mapped[int] = mapped_column(Integer())
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class FlourModel(BaseModel):
@@ -36,7 +42,6 @@ class FlourModel(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
-    short_name: Mapped[str] = mapped_column(String(255))
     brand: Mapped[str] = mapped_column(String(255))
     ingredients: Mapped[str] = mapped_column(String(255))
     milling: Mapped[str] = mapped_column(String(255))
@@ -50,6 +55,9 @@ class FlourModel(BaseModel):
     PL: Mapped[float] = mapped_column(Float())
     notes: Mapped[str] = mapped_column(String(255))
     tested: Mapped[bool] = mapped_column(Boolean())
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
 
 class FlourBlendModel(BaseModel):
@@ -76,6 +84,10 @@ class FlourBlendModel(BaseModel):
     )
     flour_04_percent: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
     # Optional relationships (handy for joins; you don’t have to expose them in schemas)
     flour_01: Mapped[FlourModel] = relationship(foreign_keys=[flour_01_id])
     flour_02: Mapped[FlourModel | None] = relationship(foreign_keys=[flour_02_id])
@@ -87,13 +99,15 @@ class FeedingEventModel(BaseModel):
     __tablename__ = "feeding_events"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    date: Mapped[str] = mapped_column(String(255))
     starter_id: Mapped[int] = mapped_column(ForeignKey("starters.id"))
     starter_ratio: Mapped[float] = mapped_column(Float())
     water_ratio: Mapped[float] = mapped_column(Float())
     flour_ratio: Mapped[float] = mapped_column(Float())
     flour_blend_id: Mapped[int] = mapped_column(ForeignKey("flour_blends.id"))
     jar_id: Mapped[int] = mapped_column(ForeignKey("jars.id"))
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
 
     starter: Mapped[StarterModel] = relationship(foreign_keys=[starter_id])
     flour_blend: Mapped[FlourBlendModel] = relationship(foreign_keys=[flour_blend_id])
@@ -109,5 +123,8 @@ class FeedingSampleModel(BaseModel):
     humidity: Mapped[float] = mapped_column(Float())
     co2: Mapped[float] = mapped_column(Float())
     distance: Mapped[float] = mapped_column(Float())
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
 
     feeding: Mapped[FeedingEventModel] = relationship(foreign_keys=[feeding_event_id])

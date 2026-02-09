@@ -27,13 +27,11 @@ class Config(BaseSettings):
     Main configuration class which loads settings from environment variables and defaults.
     """
 
-    model_config = SettingsConfigDict(
-        env_prefix="API_", env_nested_delimiter="__"
-    )
+    model_config = SettingsConfigDict(env_prefix="API_", env_nested_delimiter="__")
 
     root_path: Path = Path.home() / "fermento"
     uploads_dir: str = "uploads"
-    db_url: str = f"sqlite:///{Path.home()}/fermento/database.db"
+    db_url: str = "postgresql+psycopg://fermento:pw123@db:5432/fermento"
     db_connect_args: dict = {}
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG"
 

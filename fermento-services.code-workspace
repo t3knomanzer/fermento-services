@@ -37,6 +37,12 @@
 		},
 		{
 			"path": "infra"
+		},
+		{
+			"path": "database"
+		},
+		{
+			"path": "nginx"
 		}
 	],
 	"settings": {}

@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
   portainer:
     image: portainer/portainer-ce:latest
-    container_name: portainer
+    container_name: fermento-portainer
     restart: always
     ports:
       - "9443:9443" # HTTPS UI
@@ -13,3 +11,4 @@ services:
 
 volumes:
   portainer_data:
+  cloudbeaver_data:
