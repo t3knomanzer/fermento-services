@@ -32,9 +32,6 @@
 			"path": "../fermento-schemas"
 		},
 		{
-			"path": "infra"
-		},
-		{
 			"path": "database"
 		},
 		{
