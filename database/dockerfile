@@ -1,3 +1,3 @@
 FROM timescale/timescaledb:latest-pg16
 
-COPY "./database/001_timescale.sql" "/docker-entrypoint-initdb.d/001_timescale.sql"
+COPY "001_timescale.sql" "/docker-entrypoint-initdb.d/001_timescale.sql"
