@@ -1,7 +1,8 @@
 services:
   db:
-    image: timescale/timescaledb:latest-pg16
+    image: fermento-db
     container_name: fermento-db
+    build: ./database
     restart: unless-stopped
     environment:
       POSTGRES_DB: fermento
@@ -9,7 +10,6 @@ services:
       POSTGRES_PASSWORD: pwko34M.ioPK09-!g_89
     volumes:
       - timescale_data:/var/lib/postgresql/data
-      - ./database/db/init:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     networks:
@@ -31,7 +31,7 @@ services:
       - ingestor
 
   mosquitto:
-    image: eclipse-mosquitto:latest
+    image: fermento-mosquitto
     container_name: fermento-mosquitto
     build: ./mosquitto
     restart: unless-stopped
