@@ -40,6 +40,7 @@ services:
       - ./mosquitto/config:/mosquitto/config:ro
       - mosquitto_data:/mosquitto/data
       - mosquitto_log:/mosquitto/log
+    command: [ "sh", "-c", "ls -lah /mosquitto/config && echo '---' && cat /mosquitto/config/mosquitto.conf && echo '--- sleeping' && sleep 3600" ]
     ports:
       - 1883:1883
       - 9001:9001
