@@ -46,6 +46,20 @@ services:
     networks:
       - edge-net
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: fermento-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: gr$590-mMkloqRt_90
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - edge-net
+
   frontend:
     image: fermento-frontend
     container_name: fermento-frontend
@@ -109,6 +123,7 @@ volumes:
   timescale_data:
   mosquitto-data:
   mosquitto-log:
+  grafana_data:
 
 
 networks:
