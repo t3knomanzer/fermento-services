@@ -1,0 +1,8 @@
+# Nginx gateway for techart.int.thatsnomoon.com
+# Author: Ruben Henares
+# Email: rhenares@thatsnomoon.com
+# Maintainers: Ruben Henares
+
+FROM eclipse-mosquitto:latest
+
+COPY ./config/mosquitto.conf /mosquito/config/mosquitto.conf

@@ -33,14 +33,13 @@ services:
   mosquitto:
     image: eclipse-mosquitto:latest
     container_name: fermento-mosquitto
+    build: ./mosquitto
     restart: unless-stopped
     environment:
       - TZ=Europe/Madrid
     volumes:
-      - "{{ WorkingDir }}/mosquitto/config:/mosquitto/config:ro"
-      - mosquitto_data:/mosquitto/data
-      - mosquitto_log:/mosquitto/log
-    command: [ "sh", "-c", "ls -lah /mosquitto/config && echo '---' && cat /mosquitto/config/mosquitto.conf && echo '--- sleeping' && sleep 3600" ]
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
     ports:
       - 1883:1883
       - 9001:9001
@@ -108,8 +107,8 @@ services:
 
 volumes:
   timescale_data:
-  mosquitto_data:
-  mosquitto_log:
+  mosquitto-data:
+  mosquitto-log:
 
 
 networks:
