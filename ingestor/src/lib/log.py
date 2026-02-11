@@ -9,8 +9,7 @@ from enum import IntEnum
 from logging.handlers import TimedRotatingFileHandler
 from typing import Optional
 
-from lib.config import Config
-from lib.utils.pathing import generate_path
+import config
 
 
 class LogLevel(IntEnum):
@@ -22,21 +21,12 @@ class LogLevel(IntEnum):
 
 
 class Logger:
-    def __init__(self, name: Optional[str] = None) -> None:
+    def __init__(self, name: Optional[str] = "generic") -> None:
         # Get the log level from the config and convert it to the correct int value
         # We set the level in the logging module to the lowest and then control
         # it in the individual handlers. The config value drives the console level,
         # the file level is always set to DEBUG.
-        log_level = logging.getLevelNamesMapping()[Config().log_level]
-
-        # Create a file handler to write logs to a file using timed rotation
-        file_handler = TimedRotatingFileHandler(
-            generate_path("tnm_validation_api.log"),
-            when="midnight",
-            interval=1,
-            backupCount=3,
-        )
-        file_handler.setLevel(logging.DEBUG)
+        log_level = logging.getLevelNamesMapping()[config.LOG_LEVEL]
 
         # Create a console handler to output logs to the console
         console_handler = logging.StreamHandler()
@@ -44,12 +34,12 @@ class Logger:
 
         logging.basicConfig(
             level=logging.DEBUG,
-            format="%(asctime)s : [%(name)s][%(levelname)s] %(message)s",
+            format="[%(asctime)s][%(name)s][%(levelname)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
-            handlers=[file_handler, console_handler],
+            handlers=[console_handler],
         )
 
-        self._logger = logging.getLogger(name or "tnm_validation")
+        self._logger = logging.getLogger(name)
 
     def log(self, level: int, msg: object, **kwargs) -> None:
         self._logger.log(level, msg, **kwargs)

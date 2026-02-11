@@ -10,6 +10,10 @@ from lib.mqtt.client import MqttSubscriber
 from lib.mqtt.utils import topic_matches_sub
 import fermento_service_schemas.api as api
 
+from lib.log import Logger
+
+logger = Logger(__name__)
+
 # ------------------------------------------------------
 # API Client Setup
 # ------------------------------------------------------
@@ -20,16 +24,15 @@ api_client = APIClient(base_url=config.API_ADDRESS)
 # MQTT Subscriber Setup
 # ------------------------------------------------------
 def on_mqtt_message_received(topic, payload):
-    print(f"Received {topic}: {payload}")
     if topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_CREATE, topic):
-        print("Topic found, processing data...")
+        logger.debug("Topic found, processing data...")
         # Validate pydantic model
         try:
             feeding_sample_create = api.FeedingSampleCreateSchema.model_validate_json(
                 payload
             )
         except ValidationError as e:
-            print(f"Error validating feeding sample: {e}")
+            logger.error(f"Error validating feeding sample: {e}")
             return
 
         # Send to api
@@ -37,38 +40,38 @@ def on_mqtt_message_received(topic, payload):
             response = api_client.create_resource(
                 "feeding-sample", feeding_sample_create.model_dump()
             )
-            print(f"Feeding sample created: {response}")
+            logger.info(f"Feeding sample created: {response}")
         except HTTPError as e:
-            print(f"Error creating feeding sample: {e}")
+            logger.error(f"Error creating feeding sample: {e}")
 
     elif topic_matches_sub(config.TOPIC_JARS_CREATE, topic):
-        print("Topic found, processing data...")
+        logger.debug("Topic found, processing data...")
         # Process jar creation data
         try:
             jar_create = api.JarCreateSchema.model_validate_json(payload)
         except ValidationError as e:
-            print(f"Error validating jar: {e}")
+            logger.error(f"Error validating jar: {e}")
             return
 
         # Send to api
         try:
             response = api_client.create_resource("jar", jar_create.model_dump())
-            print(f"Jar created: {response}")
+            logger.info(f"Jar created: {response}")
         except HTTPError as e:
-            print(f"Error creating jar: {e}")
+            logger.error(f"Error creating jar: {e}")
 
     elif topic_matches_sub(config.TOPIC_FEEDING_EVENTS_REQUEST, topic):
-        print("Topic found, processing data...")
+        logger.debug("Topic found, processing data...")
         try:
             response = api_client.list_resources("feeding-events/expanded")
         except HTTPError as e:
-            print(f"Error listing feeding events: {e}")
+            logger.error(f"Error listing feeding events: {e}")
             return
 
         subscriber.publish(config.TOPIC_FEEDING_EVENTS_RECEIVE, json.dumps(response))
-        print(f"Feeding events: {response}")
+        logger.info(f"Feeding events: {response}")
     else:
-        print("Topic not implemented: " + topic)
+        logger.warning("Topic not implemented: " + topic)
 
 
 subscriber = MqttSubscriber(config.BROKER_ADDRESS, int(config.BROKER_PORT))
@@ -86,6 +89,7 @@ async def lifespan(app: FastAPI):
     """
     Context manager for managing application startup and shutdown events.
     """
+    logger.info("Application starting...")
     subscriber.connect()
     subscriber.start()
 

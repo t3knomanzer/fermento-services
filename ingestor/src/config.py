@@ -9,3 +9,5 @@ TOPIC_FEEDING_SAMPLES_CREATE = "fermento/+/feeding_samples/create"
 TOPIC_JARS_CREATE = "fermento/+/jars/create"
 TOPIC_FEEDING_EVENTS_REQUEST = "fermento/+/feeding_events/request"
 TOPIC_FEEDING_EVENTS_RECEIVE = "fermento/feeding_events/receive"
+
+LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")

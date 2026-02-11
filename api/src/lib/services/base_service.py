@@ -8,7 +8,7 @@ from typing import Generic, List, TypeVar
 from sqlalchemy.orm import Session
 
 from lib.exceptions import DatabaseError
-from lib.logging import logger
+from lib.log import logger
 from lib.repositories.base_repository import BaseCrudRepository
 from lib.utils.decorators import time_it
 

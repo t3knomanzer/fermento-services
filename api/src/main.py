@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from lib.config import Config
 from lib.database import close_database, create_database
-from lib.logging import logger
+from lib.log import Logger
 from lib.routers import (
     feeding_event_router,
     feeding_sample_router,
@@ -20,6 +20,8 @@ from lib.routers import (
     jar_router,
     starter_router,
 )
+
+logger = Logger(__name__)
 
 from lib.utils.pathing import create_root_path
 
@@ -64,4 +66,5 @@ def healthcheck() -> Dict[str, str]:
     Returns:
         Response: A simple HTTP response indicating the service is up.
     """
+    logger.debug("Healthcheck endpoint called")
     return {"result": "ok"}

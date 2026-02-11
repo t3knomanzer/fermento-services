@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from lib.database import get_session
 from lib.exceptions import DatabaseError
-from lib.logging import LogLevel, logger
+from lib.log import LogLevel, logger
 from pydantic import BaseModel
 from lib.repositories.base_repository import BaseCrudRepository
 from lib.services.base_service import BaseCrudService

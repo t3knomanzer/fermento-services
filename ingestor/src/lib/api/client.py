@@ -78,5 +78,3 @@ class APIClient:
 
     def delete_resource(self, resource: str, resource_id: Any) -> Any:
         return self._request("DELETE", f"/{resource}/{resource_id}")
-
-    # Convenience wrappers for known API entities

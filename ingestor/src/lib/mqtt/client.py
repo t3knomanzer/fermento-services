@@ -1,6 +1,10 @@
 import time
 import paho.mqtt.client as mqtt
 
+from lib.log import Logger
+
+logger = Logger(__name__)
+
 
 class MqttSubscriber:
     def __init__(self, server_address: str = "localhost", server_port: int = 1883):
@@ -25,9 +29,11 @@ class MqttSubscriber:
     # --- Public API ---------------------------------------------------------
 
     def add_on_message_callback(self, callback):
+        logger.debug(f"Adding on_message callback: {callback}")
         self._on_message_callbacks.append(callback)
 
     def add_subscribe_topic(self, topic: str):
+        logger.debug(f"Adding subscribe topic: {topic}")
         if topic not in self._subscribe_topics:
             self._subscribe_topics.append(topic)
             # If already connected, subscribe immediately
@@ -35,9 +41,11 @@ class MqttSubscriber:
                 self._client.subscribe(topic)
 
     def remove_on_message_callback(self, callback):
+        logger.debug(f"Removing on_message callback: {callback}")
         self._on_message_callbacks.remove(callback)
 
     def remove_subscribe_topic(self, topic: str):
+        logger.debug(f"Removing subscribe topic: {topic}")
         if topic in self._subscribe_topics:
             self._subscribe_topics.remove(topic)
             if self._connected:
@@ -51,12 +59,15 @@ class MqttSubscriber:
         Connect to the broker (non-blocking).
         Call start() to begin the network loop.
         """
+        logger.info(
+            f"Connecting to MQTT broker at {self._server_address}:{self._server_port}..."
+        )
         try:
             self._client.connect(self._server_address, self._server_port, keepalive)
         except ConnectionRefusedError as e:
-            print(f"MQTT connection refused: {e}")
+            logger.error(f"MQTT connection refused: {e}")
         except OSError as e:
-            print(f"MQTT connection error: {e}")
+            logger.error(f"MQTT connection error: {e}")
 
     def start(self):
         """
@@ -88,6 +99,7 @@ class MqttSubscriber:
         """
         Convenience publish method (useful for retained cache topics).
         """
+        logger.debug(f"Publishing to {topic}: {payload}")
         if isinstance(payload, str):
             payload = payload.encode("utf-8")
         return self._client.publish(topic, payload=payload, qos=qos, retain=retain)
@@ -96,7 +108,7 @@ class MqttSubscriber:
 
     def on_connect(self, client, userdata, flags, reason_code, properties):
         self._connected = True
-        print(f"MQTT Connected with result code {reason_code}")
+        logger.info(f"MQTT Connected with result code {reason_code}")
 
         # Re-subscribe on reconnect
         for topic in self._subscribe_topics:
@@ -104,7 +116,7 @@ class MqttSubscriber:
 
     def on_disconnect(self, client, userdata, reason_code, properties, *args, **kwargs):
         self._connected = False
-        print(f"MQTT Disconnected with reason code {reason_code}")
+        logger.info(f"MQTT Disconnected with reason code {reason_code}")
 
     def on_message(self, client, userdata, msg):
         if self._on_message_callbacks:
@@ -112,6 +124,6 @@ class MqttSubscriber:
                 try:
                     callback(msg.topic, msg.payload)
                 except Exception as e:
-                    print(f"on_message callback error: {e}")
+                    logger.error(f"on_message callback error: {e}")
         else:
-            print("No on_message callbacks registered.")
+            logger.warning("No on_message callbacks registered.")
