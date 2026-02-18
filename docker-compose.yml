@@ -83,7 +83,7 @@ services:
     restart: unless-stopped
     environment:
       - API_ROOT_PATH=/src/data/
-      - API_DB_URL=postgresql+psycopg://fermento:pwko34M.ioPK09-!g_89@db:5432/fermento
+      - API_DB_URL=
       - API_LOG_LEVEL=DEBUG
       - AWS_ACCESS_KEY_ID=
       - AWS_SECRET_ACCESS_KEY=
