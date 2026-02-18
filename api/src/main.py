@@ -10,6 +10,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import dotenv
 
+dotenv.load_dotenv()
+
 from lib.config import Config
 from lib.database import close_database, create_database
 from lib.log import Logger
@@ -21,8 +23,6 @@ from lib.routers import (
     jar_router,
     starter_router,
 )
-
-dotenv.load_dotenv()
 
 logger = Logger(__name__)
 
