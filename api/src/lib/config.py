@@ -31,7 +31,7 @@ class Config(BaseSettings):
 
     root_path: Path = Path.home() / "fermento"
     uploads_dir: str = "uploads"
-    db_url: str = "postgresql+psycopg://localhost:pw123@db:5432/fermento"
+    db_url: str = "postgresql+psycopg://fermento:123@localhost:5432/fermento"
     db_connect_args: dict = {}
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG"
 
