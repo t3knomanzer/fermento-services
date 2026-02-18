@@ -5,9 +5,9 @@ services:
     build: ./database
     restart: unless-stopped
     environment:
-      POSTGRES_DB: fermento
-      POSTGRES_USER: fermento
-      POSTGRES_PASSWORD: pwko34M.ioPK09-!g_89
+      - POSTGRES_DB=fermento
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - timescale_data:/var/lib/postgresql/data
     ports:
@@ -83,11 +83,11 @@ services:
     restart: unless-stopped
     environment:
       - API_ROOT_PATH=/src/data/
-      - API_DB_URL=
+      - API_DB_URL=${API_DB_URL}
       - API_LOG_LEVEL=DEBUG
-      - AWS_ACCESS_KEY_ID=
-      - AWS_SECRET_ACCESS_KEY=
-      - AWS_DEFAULT_REGION=
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
     ports:
       - 8091:8091
     volumes:
