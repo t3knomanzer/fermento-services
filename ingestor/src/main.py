@@ -24,9 +24,9 @@ api_client = APIClient(base_url=config.API_ADDRESS)
 # MQTT Subscriber Setup
 # ------------------------------------------------------
 def on_mqtt_message_received(topic, payload):
+    # --- Feeding Sample Create ---
     if topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_CREATE, topic):
         logger.debug("Topic found, processing data...")
-        # Validate pydantic model
         try:
             feeding_sample_create = api.FeedingSampleCreateSchema.model_validate_json(
                 payload
@@ -44,9 +44,41 @@ def on_mqtt_message_received(topic, payload):
         except HTTPError as e:
             logger.error(f"Error creating feeding sample: {e}")
 
+    # --- Feeding Sample Image ---
+    elif topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_IMAGE, topic):
+        logger.debug("Topic found, processing data...")
+        # Validate that ehe payload is a sequence of bytes (e.g. an image)
+        if not isinstance(payload, (bytes, memoryview)):
+            logger.error(
+                "Error validating feeding sample image: Payload is not a sequence of bytes"
+            )
+            return
+
+        # Validate topic structure and extract feeding sample ID
+        # Struct: fermento/{<device_id>}/feeding_samples/image/{bundle_id}
+        topic_parts = topic.split("/")
+        if len(topic_parts) != 5:
+            logger.error(
+                "Error validating feeding sample image: Topic does not have the expected structure"
+            )
+            return
+
+        bundle_id = topic_parts[4]
+
+        # Upload to API
+        try:
+            response = api_client.upload(
+                "feeding-sample/image",
+                data=payload,
+                bundle_id=bundle_id,
+            )
+            logger.info(f"Feeding sample image uploaded: {response}")
+        except HTTPError as e:
+            logger.error(f"Error uploading feeding sample image: {e}")
+
+    # --- Jar Create ---
     elif topic_matches_sub(config.TOPIC_JARS_CREATE, topic):
         logger.debug("Topic found, processing data...")
-        # Process jar creation data
         try:
             jar_create = api.JarCreateSchema.model_validate_json(payload)
         except ValidationError as e:
@@ -60,6 +92,7 @@ def on_mqtt_message_received(topic, payload):
         except HTTPError as e:
             logger.error(f"Error creating jar: {e}")
 
+    # --- Feeding Events Request ---
     elif topic_matches_sub(config.TOPIC_FEEDING_EVENTS_REQUEST, topic):
         logger.debug("Topic found, processing data...")
         try:
@@ -76,6 +109,7 @@ def on_mqtt_message_received(topic, payload):
 
 subscriber = MqttSubscriber(config.BROKER_ADDRESS, int(config.BROKER_PORT))
 subscriber.add_subscribe_topic(config.TOPIC_FEEDING_SAMPLES_CREATE)
+subscriber.add_subscribe_topic(config.TOPIC_FEEDING_SAMPLES_IMAGE)
 subscriber.add_subscribe_topic(config.TOPIC_FEEDING_EVENTS_REQUEST)
 subscriber.add_subscribe_topic(config.TOPIC_JARS_CREATE)
 subscriber.add_on_message_callback(on_mqtt_message_received)

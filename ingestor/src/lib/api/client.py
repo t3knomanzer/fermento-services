@@ -13,18 +13,12 @@ class APIClient:
     def __init__(
         self,
         base_url: str = "http://localhost:8000",
-        token: Optional[str] = None,
         timeout: float = 10.0,
         max_retries: int = 3,
     ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
-        if token:
-            self.session.headers.update({"Authorization": f"Bearer {token}"})
-        self.session.headers.update(
-            {"Content-Type": "application/json", "Accept": "application/json"}
-        )
 
         retries = Retry(
             total=max_retries, backoff_factor=0.3, status_forcelist=(500, 502, 503, 504)
@@ -36,9 +30,22 @@ class APIClient:
     def _url(self, path: str) -> str:
         return f"{self.base_url}/{path.lstrip('/')}"
 
-    def _request(self, method: str, path: str, **kwargs) -> Any:
+    def _request(
+        self,
+        method: str,
+        path: str,
+        headers: Dict[str, str] = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+        **kwargs,
+    ) -> Any:
         url = self._url(path)
         kwargs.setdefault("timeout", self.timeout)
+
+        if headers:
+            kwargs.setdefault("headers", {}).update(headers)
+
         response = self.session.request(method, url, **kwargs)
         try:
             response.raise_for_status()
@@ -78,3 +85,17 @@ class APIClient:
 
     def delete_resource(self, resource: str, resource_id: Any) -> Any:
         return self._request("DELETE", f"/{resource}/{resource_id}")
+
+    # Specific method for uploading binary data (e.g. feeding sample frames)
+    def upload(self, resource: str, data: bytes, **kwargs) -> Any:
+        url = f"/{resource}?"
+        for key, value in kwargs.items():
+            url += f"{key}={value}&"
+        url = url.rstrip("&")
+
+        return self._request(
+            "POST",
+            url,
+            data=data,
+            headers={"Content-Type": "application/octet-stream"},
+        )

@@ -3,7 +3,16 @@
 Module defining the database models for the application.
 """
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, String, Integer, func
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    String,
+    Integer,
+    func,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -116,13 +125,16 @@ class FeedingEventModel(BaseModel):
 
 class FeedingSampleModel(BaseModel):
     __tablename__ = "feeding_samples"
+    compare_fields = ["bundle_id"]
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    bundle_id: Mapped[int] = mapped_column(BigInteger())
     feeding_event_id: Mapped[int] = mapped_column(ForeignKey("feeding_events.id"))
     temperature: Mapped[float] = mapped_column(Float())
     humidity: Mapped[float] = mapped_column(Float())
     co2: Mapped[float] = mapped_column(Float())
     distance: Mapped[float] = mapped_column(Float())
+    image_key: Mapped[str | None] = mapped_column(String(255), nullable=True)
     timestamp: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True
     )

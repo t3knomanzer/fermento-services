@@ -2,6 +2,7 @@
 """ """
 
 
+import boto3
 from lib.models import FeedingSampleModel
 from lib.repositories.feeding_sample_repository import (
     FeedingSampleRepository,
@@ -32,3 +33,14 @@ class FeedingSampleService(
 
     def _convert_to_schema(self, model: FeedingSampleModel) -> FeedingSampleSchema:
         return FeedingSampleSchema(**model.__dict__)
+
+    def upload_image(self, file: bytes, resource_key: str):
+        """Uploads a feeding sample image to S3."""
+        s3 = boto3.client("s3")
+        s3.put_object(
+            Bucket="feeding-sample-images",
+            Key=resource_key,
+            Body=file,
+            ContentType="image/jpeg",
+        )
+        # Repository method to update feeding sample with image key
