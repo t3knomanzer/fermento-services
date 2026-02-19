@@ -1,0 +1,1048 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfcyc85av9pfka"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "showValues": false,
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "co2_norm"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "purple",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "__systemRef": "hideSeriesFrom",
+                        "matcher": {
+                            "id": "byNames",
+                            "options": {
+                                "mode": "exclude",
+                                "names": [
+                                    "humidity_norm",
+                                    "co2_norm"
+                                ],
+                                "prefix": "All except:",
+                                "readOnly": true
+                            }
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.hideFrom",
+                                "value": {
+                                    "legend": false,
+                                    "tooltip": true,
+                                    "viz": true
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 14,
+                "x": 0,
+                "y": 0
+            },
+            "id": 4,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "12.3.2",
+            "targets": [
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "hide": false,
+                    "rawQuery": true,
+                    "rawSql": "WITH stats AS (\r\n  SELECT\r\n    MIN(temperature) AS min_val,\r\n    MAX(temperature) AS max_val\r\n  FROM feeding_samples\r\n  WHERE feeding_event_id = $feeding_event\r\n)\r\n\r\nSELECT\r\n  timestamp,\r\n  (temperature - stats.min_val) /\r\n  NULLIF(stats.max_val - stats.min_val, 0) AS temperature_norm\r\nFROM feeding_samples, stats\r\nWHERE feeding_event_id = $feeding_event\r\n  AND $__timeFilter(timestamp)\r\nORDER BY timestamp",
+                    "refId": "A",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    }
+                },
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "hide": false,
+                    "rawQuery": true,
+                    "rawSql": "WITH stats AS (\r\n  SELECT\r\n    MIN(distance) AS min_val,\r\n    MAX(distance) AS max_val\r\n  FROM feeding_samples\r\n  WHERE feeding_event_id = $feeding_event\r\n)\r\n\r\nSELECT\r\n  timestamp,\r\n  (1 - (distance - stats.min_val) /\r\n  NULLIF(stats.max_val - stats.min_val, 0)) AS distance_norm\r\nFROM feeding_samples, stats\r\nWHERE feeding_event_id = $feeding_event\r\n  AND $__timeFilter(timestamp)\r\nORDER BY timestamp",
+                    "refId": "B",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    }
+                },
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "hide": false,
+                    "rawQuery": true,
+                    "rawSql": "WITH stats AS (\r\n  SELECT\r\n    MIN(humidity) AS min_val,\r\n    MAX(humidity) AS max_val\r\n  FROM feeding_samples\r\n  WHERE feeding_event_id = $feeding_event\r\n)\r\n\r\nSELECT\r\n  timestamp,\r\n  (humidity - stats.min_val) /\r\n  NULLIF(stats.max_val - stats.min_val, 0) AS humidity_norm\r\nFROM feeding_samples, stats\r\nWHERE feeding_event_id = $feeding_event\r\n  AND $__timeFilter(timestamp)\r\nORDER BY timestamp",
+                    "refId": "C",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    }
+                },
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "hide": false,
+                    "rawQuery": true,
+                    "rawSql": "WITH stats AS (\r\n  SELECT\r\n    MIN(co2) AS min_val,\r\n    MAX(co2) AS max_val\r\n  FROM feeding_samples\r\n  WHERE feeding_event_id = $feeding_event\r\n)\r\n\r\nSELECT\r\n  timestamp,\r\n  (co2 - stats.min_val) /\r\n  NULLIF(stats.max_val - stats.min_val, 0) AS co2_norm\r\nFROM feeding_samples, stats\r\nWHERE feeding_event_id = $feeding_event\r\n  AND $__timeFilter(timestamp)\r\nORDER BY timestamp",
+                    "refId": "D",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    }
+                }
+            ],
+            "title": "Combined",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfcyc85av9pfka"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 5,
+                "x": 14,
+                "y": 0
+            },
+            "id": 5,
+            "options": {
+                "afterRender": "const subscription = context.grafana.eventBus.subscribe({ type: 'data-hover' }, (data) => {\r\n\r\n  const hoverIndex = data.payload.rowIndex;\r\n  const series = context.panelData.series[0];\r\n  const imageField = series.fields.find(f => f.name === \"image_key\");\r\n  const imageKey = imageField.values.get(hoverIndex);\r\n  const filename = imageKey.split(\"/\").pop();\r\n\r\n  // remove extension\r\n  const base = filename.replace(\".jpg\", \"\");\r\n\r\n  // extract parts\r\n  const year = base.substring(0, 4);\r\n  const month = base.substring(4, 6);\r\n  const day = base.substring(6, 8);\r\n  const hour = base.substring(8, 10);\r\n  const minute = base.substring(10, 12);\r\n  const second = base.substring(12, 14);\r\n\r\n  // build readable format\r\n  const dateTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;\r\n\r\n\r\n  const baseUrl = \"https://feeding-sample-images.s3.dualstack.eu-north-1.amazonaws.com/\"\r\n  const imageUrl = baseUrl + imageKey;\r\n  document.getElementById(\"hover_img\").src = imageUrl;\r\n  document.getElementById(\"img_label\").innerText = dateTime;\r\n\r\n});\r\n\r\n\r\n",
+                "content": "<div style=\"width:100%; height:100%; position:relative;\">\r\n     <img id=\"hover_img\" style=\"width:100%; height:100%; object-fit:cover;\" />\r\n     <div id=\"img_label\" style=\"\r\n         width:100%;\r\n         position:absolute;\r\n         bottom:-20%;\r\n         left:50%;\r\n         transform:translateX(-50%);\r\n         background:rgba(0,0,0,0.5);\r\n         color:white;\r\n         padding:4px 10px;\r\n         border-radius:6px;\r\n         font-size:14px;\r\n         text-align:center\r\n       \">\r\n          image_name.jpg\r\n     </div>\r\n</div>",
+                "contentPartials": [],
+                "defaultContent": "",
+                "editor": {
+                    "format": "auto",
+                    "language": "html"
+                },
+                "editors": [
+                    "afterRender",
+                    "default"
+                ],
+                "externalStyles": [],
+                "helpers": "",
+                "renderMode": "allRows",
+                "styles": "",
+                "wrap": true
+            },
+            "pluginVersion": "6.2.0",
+            "targets": [
+                {
+                    "dataset": "fermento",
+                    "editorMode": "code",
+                    "format": "table",
+                    "rawQuery": true,
+                    "rawSql": "SELECT * FROM feeding_samples WHERE feeding_event_id = $feeding_event ",
+                    "refId": "A",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "*",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50,
+                        "whereJsonTree": {
+                            "children1": [],
+                            "id": "a9a9b9a8-0123-4456-b89a-b19c72b7dba0",
+                            "type": "group"
+                        }
+                    },
+                    "table": "feeding_samples"
+                }
+            ],
+            "title": "",
+            "type": "marcusolsson-dynamictext-panel"
+        },
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfcyc85av9pfka"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "left",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "footer": {
+                            "reducers": []
+                        },
+                        "inspect": false,
+                        "width": 125
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "starter_ratio"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 118
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "starter_id"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.width",
+                                "value": 97
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 9,
+                "w": 5,
+                "x": 19,
+                "y": 0
+            },
+            "id": 7,
+            "options": {
+                "cellHeight": "sm",
+                "frameIndex": 0,
+                "showHeader": true
+            },
+            "pluginVersion": "12.3.2",
+            "targets": [
+                {
+                    "dataset": "fermento",
+                    "editorMode": "code",
+                    "format": "table",
+                    "rawQuery": true,
+                    "rawSql": "SELECT\r\n  fe.id,\r\n  fe.timestamp,\r\n  s.name AS starter_name,\r\n  j.name AS jar_name,\r\n  fe.starter_ratio,\r\n  fe.water_ratio,\r\n  fe.flour_ratio\r\nFROM feeding_events fe\r\nJOIN starters s\r\n  ON fe.starter_id = s.id\r\nJOIN jars j\r\n  ON fe.jar_id = j.id\r\nWHERE fe.id = $feeding_event;\r\n",
+                    "refId": "A",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "*",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    },
+                    "table": "feeding_events"
+                }
+            ],
+            "title": "Feeding",
+            "transformations": [
+                {
+                    "id": "formatTime",
+                    "options": {
+                        "outputFormat": "MM/DD/YY HH:mm:ss",
+                        "timeField": "timestamp",
+                        "timezone": "browser",
+                        "useTimezone": true
+                    }
+                },
+                {
+                    "id": "transpose",
+                    "options": {
+                        "firstFieldName": "",
+                        "restFieldsName": ""
+                    }
+                }
+            ],
+            "type": "table"
+        },
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfcyc85av9pfka"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "showValues": false,
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 0,
+                "y": 9
+            },
+            "id": 1,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "12.3.2",
+            "targets": [
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "rawQuery": true,
+                    "rawSql": "SELECT temperature, \"timestamp\" FROM feeding_samples WHERE feeding_event_id = $feeding_event ",
+                    "refId": "A",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "temperature",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            },
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "\"timestamp\"",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    },
+                    "table": "feeding_samples"
+                }
+            ],
+            "title": "Temperature",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfcyc85av9pfka"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "showValues": false,
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 6,
+                "y": 9
+            },
+            "id": 2,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "12.3.2",
+            "targets": [
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "rawQuery": true,
+                    "rawSql": "SELECT humidity, \"timestamp\" FROM feeding_samples WHERE feeding_event_id = $feeding_event ",
+                    "refId": "A",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "temperature",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            },
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "\"timestamp\"",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    },
+                    "table": "feeding_samples"
+                }
+            ],
+            "title": "Humidity",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfcyc85av9pfka"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "showValues": false,
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 12,
+                "y": 9
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "12.3.2",
+            "targets": [
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "rawQuery": true,
+                    "rawSql": "SELECT distance, \"timestamp\" FROM feeding_samples WHERE feeding_event_id = $feeding_event ",
+                    "refId": "A",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "temperature",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            },
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "\"timestamp\"",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    },
+                    "table": "feeding_samples"
+                }
+            ],
+            "title": "Distance",
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "type": "grafana-postgresql-datasource",
+                "uid": "cfcyc85av9pfka"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "showValues": false,
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": 0
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 6,
+                "x": 18,
+                "y": 9
+            },
+            "id": 3,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "hideZeros": false,
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "12.3.2",
+            "targets": [
+                {
+                    "dataset": "fermento",
+                    "datasource": {
+                        "type": "grafana-postgresql-datasource",
+                        "uid": "cfcyc85av9pfka"
+                    },
+                    "editorMode": "code",
+                    "format": "table",
+                    "rawQuery": true,
+                    "rawSql": "SELECT co2, \"timestamp\" FROM feeding_samples WHERE feeding_event_id = $feeding_event ",
+                    "refId": "A",
+                    "sql": {
+                        "columns": [
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "temperature",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            },
+                            {
+                                "parameters": [
+                                    {
+                                        "name": "\"timestamp\"",
+                                        "type": "functionParameter"
+                                    }
+                                ],
+                                "type": "function"
+                            }
+                        ],
+                        "groupBy": [
+                            {
+                                "property": {
+                                    "type": "string"
+                                },
+                                "type": "groupBy"
+                            }
+                        ],
+                        "limit": 50
+                    },
+                    "table": "feeding_samples"
+                }
+            ],
+            "title": "CO2",
+            "type": "timeseries"
+        }
+    ],
+    "preload": false,
+    "refresh": "",
+    "schemaVersion": 42,
+    "tags": [],
+    "templating": {
+        "list": [
+            {
+                "current": {
+                    "text": "6",
+                    "value": "6"
+                },
+                "definition": "SELECT DISTINCT feeding_event_id\nFROM feeding_samples\nORDER BY feeding_event_id;\n",
+                "label": "Feeding Event",
+                "name": "feeding_event",
+                "options": [],
+                "query": "SELECT DISTINCT feeding_event_id\nFROM feeding_samples\nORDER BY feeding_event_id;\n",
+                "refresh": 1,
+                "regex": "",
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "2026-02-19T15:33:11.610Z",
+        "to": "2026-02-19T18:18:08.317Z"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "fermento-main",
+    "uid": "adk526t",
+    "version": 64
+}
