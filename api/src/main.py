@@ -17,6 +17,7 @@ from lib.database import close_database, create_database
 from lib.log import Logger
 from lib.routers import (
     feeding_event_router,
+    feeding_sample_processed_router,
     feeding_sample_router,
     flour_blend_router,
     flour_router,
@@ -59,6 +60,7 @@ app.include_router(flour_router.router)
 app.include_router(flour_blend_router.router)
 app.include_router(feeding_event_router.router)
 app.include_router(feeding_sample_router.router)
+app.include_router(feeding_sample_processed_router.router)
 
 
 @app.get("/healthcheck")

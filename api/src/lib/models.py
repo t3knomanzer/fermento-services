@@ -139,4 +139,31 @@ class FeedingSampleModel(BaseModel):
         DateTime(timezone=True), server_default=func.now(), index=True
     )
 
-    feeding: Mapped[FeedingEventModel] = relationship(foreign_keys=[feeding_event_id])
+    feeding_event: Mapped[FeedingEventModel] = relationship(
+        foreign_keys=[feeding_event_id]
+    )
+
+
+class FeedingSampleProcessedModel(BaseModel):
+    __tablename__ = "feeding_samples_processed"
+    compare_fields = ["feeding_sample_id"]
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    feeding_sample_id: Mapped[int] = mapped_column(ForeignKey("feeding_samples.id"))
+    temperature: Mapped[float] = mapped_column(Float())
+    humidity: Mapped[float] = mapped_column(Float())
+    co2: Mapped[float] = mapped_column(Float())
+    distance: Mapped[float] = mapped_column(Float())
+    growth: Mapped[float] = mapped_column(Float())
+    growth_rate: Mapped[float] = mapped_column(Float())
+    acceleration: Mapped[float] = mapped_column(Float())
+    running_max: Mapped[float] = mapped_column(Float())
+    running_min: Mapped[float] = mapped_column(Float())
+    stage_estimate: Mapped[str] = mapped_column(String(255))
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )
+
+    feeding_sample: Mapped[FeedingSampleModel] = relationship(
+        foreign_keys=[feeding_sample_id]
+    )
