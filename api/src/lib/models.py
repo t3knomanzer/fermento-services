@@ -156,8 +156,6 @@ class FeedingSampleProcessedModel(BaseModel):
     growth: Mapped[float] = mapped_column(Float())
     growth_rate: Mapped[float] = mapped_column(Float())
     acceleration: Mapped[float] = mapped_column(Float())
-    running_max: Mapped[float] = mapped_column(Float())
-    running_min: Mapped[float] = mapped_column(Float())
     stage_estimate: Mapped[str] = mapped_column(String(255))
     timestamp: Mapped[DateTime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True
