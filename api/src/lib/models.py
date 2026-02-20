@@ -153,7 +153,6 @@ class FeedingSampleProcessedModel(BaseModel):
     temperature: Mapped[float] = mapped_column(Float())
     humidity: Mapped[float] = mapped_column(Float())
     co2: Mapped[float] = mapped_column(Float())
-    distance: Mapped[float] = mapped_column(Float())
     growth: Mapped[float] = mapped_column(Float())
     growth_rate: Mapped[float] = mapped_column(Float())
     acceleration: Mapped[float] = mapped_column(Float())
