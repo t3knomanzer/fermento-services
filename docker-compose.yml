@@ -123,6 +123,20 @@ services:
       - mosquitto
       - api
 
+  processor:
+    image: fermento-processor
+    container_name: fermento-processor
+    build: ./processor
+    restart: unless-stopped
+    environment:
+      - API_ADDRESS=http://api:8091
+      - BROKER_ADDRESS=mosquitto
+      - BROKER_PORT=1883
+    networks:
+      - edge-net
+    depends_on:
+      - mosquitto
+
 volumes:
   timescale_data:
   mosquitto-data:
