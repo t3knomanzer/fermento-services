@@ -6,7 +6,7 @@ import config
 from fastapi import FastAPI
 
 from lib.api.client import APIClient
-from lib.mqtt.client import MqttSubscriber
+from lib.mqtt.client import MqttSubscriber, 
 from lib.mqtt.utils import topic_matches_sub
 import fermento_service_schemas.api as api
 
@@ -40,7 +40,13 @@ def on_mqtt_message_received(topic, payload):
             response = api_client.create_resource(
                 "feeding-sample", feeding_sample_create.model_dump()
             )
+            response = api.FeedingSampleSchema.model_validate(response)
             logger.info(f"Feeding sample created: {response}")
+
+            # Notify MQTT subscribers that a new feeding sample has been created
+            msg = {"id": response.id}
+            subscriber.publish(config.TOPIC_FEEDING_SAMPLES_POSTED, json.dumps(msg))
+
         except HTTPError as e:
             logger.error(f"Error creating feeding sample: {e}")
 
