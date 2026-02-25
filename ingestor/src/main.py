@@ -6,7 +6,7 @@ import config
 from fastapi import FastAPI
 
 from lib.api.client import APIClient
-from lib.mqtt.client import MqttSubscriber, 
+from lib.mqtt.client import MqttSubscriber
 from lib.mqtt.utils import topic_matches_sub
 import fermento_service_schemas.api as api
 
