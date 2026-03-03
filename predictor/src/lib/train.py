@@ -1,0 +1,501 @@
+"""
+train.py — Model training and hyperparameter tuning.
+
+Supported backends:
+    gbt   - sklearn GradientBoostingClassifier (default, no extra deps)
+    lgbm  - LightGBM (pip install lightgbm)
+    rf    - sklearn RandomForestClassifier
+    xgb   - XGBoost (pip install xgboost)
+    cnn   - 1D Convolutional Neural Network (pip install tensorflow)
+
+Usage:
+    python main.py train    <data_dir> [--backend gbt|lgbm|rf|xgb|cnn]
+    python main.py tune     <data_dir> [--backend gbt|lgbm|rf|xgb|cnn|all]
+    python main.py validate <data_dir> [--backend gbt|lgbm|rf|xgb]
+"""
+
+import warnings
+
+warnings.filterwarnings("ignore")
+
+import os
+import tempfile
+import numpy as np
+import pandas as pd
+import joblib
+from pathlib import Path
+
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import LeaveOneGroupOut, cross_val_score, ParameterGrid
+from sklearn.metrics import classification_report, confusion_matrix
+
+from config import STAGE_NAMES, MODEL_PATH
+from lib.data import load_all_runs, build_feature_matrix
+
+
+# ---------------------------------------------------------------------------
+# Backend registry
+# ---------------------------------------------------------------------------
+
+
+def _get_lgbm():
+    try:
+        from lightgbm import LGBMClassifier
+
+        return LGBMClassifier
+    except ImportError:
+        raise ImportError("LightGBM is not installed. Run: pip install lightgbm")
+
+
+def _get_xgb():
+    try:
+        from xgboost import XGBClassifier
+
+        return XGBClassifier
+    except ImportError:
+        raise ImportError("XGBoost is not installed. Run: pip install xgboost")
+
+
+BACKENDS = {
+    "gbt": {
+        "label": "Gradient Boosting (sklearn)",
+        "factory": lambda p: GradientBoostingClassifier(**p, random_state=42),
+        "defaults": dict(
+            n_estimators=200,
+            max_depth=4,
+            learning_rate=0.05,
+            subsample=0.8,
+        ),
+        "param_grid": {
+            "n_estimators": [100, 200, 400],
+            "max_depth": [3, 4, 5],
+            "learning_rate": [0.01, 0.05, 0.1],
+            "subsample": [0.7, 0.8, 1.0],
+        },
+    },
+    "lgbm": {
+        "label": "LightGBM",
+        "factory": lambda p: _get_lgbm()(**p, random_state=42, verbose=-1),
+        "defaults": dict(
+            n_estimators=100,
+            max_depth=6,
+            learning_rate=0.05,
+            subsample=0.7,
+            num_leaves=15,
+        ),
+        "param_grid": {
+            "n_estimators": [100, 200, 400],
+            "max_depth": [3, 4, 6],
+            "learning_rate": [0.01, 0.05, 0.1],
+            "num_leaves": [15, 31, 63],
+            "subsample": [0.7, 0.8, 1.0],
+        },
+    },
+    "rf": {
+        "label": "Random Forest",
+        "factory": lambda p: RandomForestClassifier(**p, random_state=42, n_jobs=-1),
+        "defaults": dict(
+            n_estimators=200,
+            max_depth=None,
+            min_samples_leaf=2,
+        ),
+        "param_grid": {
+            "n_estimators": [100, 200, 400],
+            "max_depth": [None, 10, 20],
+            "min_samples_leaf": [1, 2, 4],
+            "max_features": ["sqrt", "log2"],
+        },
+    },
+    "xgb": {
+        "label": "XGBoost",
+        "factory": lambda p: _get_xgb()(
+            **p, random_state=42, n_jobs=-1, eval_metric="mlogloss", verbosity=0
+        ),
+        "defaults": dict(
+            n_estimators=200,
+            max_depth=4,
+            learning_rate=0.05,
+            subsample=0.8,
+            colsample_bytree=0.8,
+        ),
+        "param_grid": {
+            "n_estimators": [100, 200, 400],
+            "max_depth": [3, 4, 6],
+            "learning_rate": [0.01, 0.05, 0.1],
+            "subsample": [0.7, 0.8, 1.0],
+            "colsample_bytree": [0.7, 0.8, 1.0],
+        },
+    },
+}
+
+# Tree-based backends that don't need feature scaling
+_NO_SCALER = {"lgbm", "rf", "xgb"}
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _build_pipeline(backend: str, params: dict) -> Pipeline:
+    cfg = BACKENDS[backend]
+    if backend in _NO_SCALER:
+        return Pipeline([("clf", cfg["factory"](params))])
+    return Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("clf", cfg["factory"](params)),
+        ]
+    )
+
+
+def _load_data(data_dir: str):
+    print(f"Loading runs from: {data_dir}")
+    raw_df = load_all_runs(data_dir)
+    n_runs = raw_df["run_id"].nunique()
+    print(f"  {n_runs} runs, {len(raw_df):,} samples")
+    X, y, groups = build_feature_matrix(raw_df)
+    return raw_df, X, y, groups
+
+
+def _print_transition_table(run_id, run_df, model):
+    """Run the monitor on a single run using a fitted model, print transition table."""
+    from lib.monitor import FermentationMonitor, SensorReading
+
+    # Persist model to temp file — FermentationMonitor loads from path
+    with tempfile.NamedTemporaryFile(suffix=".pkl", delete=False) as tmp:
+        tmp_path = tmp.name
+    joblib.dump(model, tmp_path)
+
+    try:
+        monitor = FermentationMonitor(model_path=tmp_path, silent=True)
+        run_df = run_df.reset_index(drop=True)
+
+        prev_stage, prev_true = None, None
+        true_transitions, pred_transitions = {}, {}
+
+        for _, row in run_df.iterrows():
+            reading = SensorReading(
+                timestamp=row["timestamp"].to_pydatetime(),
+                temperature=row["temperature"],
+                humidity=row["humidity"],
+                distance=row["distance"],
+                co2=row["co2"],
+                starter_ratio=row["starter_ratio"],
+                water_ratio=row["water_ratio"],
+                flour_ratio=row["flour_ratio"],
+            )
+            stage = monitor.update(reading)
+            true_stage = int(row["stage"])
+
+            if true_stage != prev_true:
+                true_transitions[true_stage] = reading.timestamp
+            prev_true = true_stage
+
+            if stage != prev_stage:
+                pred_transitions[stage] = reading.timestamp
+            prev_stage = stage
+    finally:
+        os.unlink(tmp_path)
+
+    all_stages = sorted(set(true_transitions) | set(pred_transitions))
+    col_w = 14
+    print(f"\n    Run {run_id}:")
+    print(f"      {'':20}  {'True':>{col_w}}   {'Prediction':>{col_w}}   {'Error':>10}")
+    print(f"      {'-'*20}  {'-'*col_w}   {'-'*col_w}   {'-'*10}")
+
+    errors = []
+    for sid in all_stages:
+        name = f"Stage {STAGE_NAMES.get(sid, sid)}:"
+        t_dt = true_transitions.get(sid)
+        p_dt = pred_transitions.get(sid)
+        t_str = t_dt.strftime("%H:%M:%S") if t_dt else "—"
+        p_str = p_dt.strftime("%H:%M:%S") if p_dt else "—"
+        if t_dt and p_dt:
+            err_min = (p_dt - t_dt).total_seconds() / 60
+            errors.append(abs(err_min))
+            err_str = f"{err_min:+.0f} min"
+        else:
+            err_str = "—"
+        print(f"      {name:<20}  {t_str:>{col_w}}   {p_str:>{col_w}}   {err_str:>10}")
+
+    mae = sum(errors) / len(errors) if errors else 0.0
+    if errors:
+        print(f"\n      MAE: {mae:.1f} min  |  Max error: {max(errors):.1f} min")
+
+    return mae
+
+
+# ---------------------------------------------------------------------------
+# Train
+# ---------------------------------------------------------------------------
+
+
+def train(data_dir: str, model_path: Path = MODEL_PATH, backend: str = "lgbm") -> None:
+    """
+    Train on all data and save the model.
+    Prints feature importances — use validate() for honest performance evaluation.
+    """
+    if backend == "cnn":
+        _train_cnn(data_dir, model_path)
+        return
+
+    if backend not in BACKENDS:
+        raise ValueError(
+            f"Unknown backend '{backend}'. Choose from: {list(BACKENDS)} or 'cnn'"
+        )
+
+    cfg = BACKENDS[backend]
+    print(f"Backend: {cfg['label']}")
+
+    raw_df, X, y, groups = _load_data(data_dir)
+
+    print("Training on all data...")
+    model = _build_pipeline(backend, cfg["defaults"])
+    model.fit(X, y)
+
+    clf = model.named_steps["clf"]
+    if hasattr(clf, "feature_importances_"):
+        importances = pd.Series(clf.feature_importances_, index=X.columns)
+        print("\nTop 10 features:")
+        print(importances.nlargest(10).to_string())
+
+    joblib.dump(model, model_path)
+    print(f"\nModel saved → {model_path}")
+
+
+def _train_cnn(data_dir: str, model_path: Path) -> None:
+    from cnn import CNN_DEFAULTS, make_windows, train_cnn
+
+    print("Backend: 1D CNN (TensorFlow)")
+    raw_df = load_all_runs(data_dir)
+    print(
+        f"  {raw_df['run_id'].nunique()} runs, {len(raw_df):,} samples — training on all"
+    )
+
+    X, y, groups = build_feature_matrix(raw_df)
+    X_win, y_win, g_win = make_windows(X.values, y, groups)
+    print(f"  Windows: {len(X_win):,}  shape: {X_win.shape}")
+    train_cnn(X_win, y_win, g_win, CNN_DEFAULTS, model_path, test_size=None)
+
+
+# ---------------------------------------------------------------------------
+# Validate (LOOCV)
+# ---------------------------------------------------------------------------
+
+
+def validate(data_dir: str, backend: str = "lgbm") -> None:
+    """
+    Leave-one-out cross-validation across all runs.
+    Each run is held out once while the model trains on the remaining N-1 runs.
+    Prints per-run transition tables and aggregate F1 + timing MAE.
+    Does not save a model — use train() after validating.
+    """
+    if backend not in BACKENDS:
+        raise ValueError(f"Unknown backend '{backend}'. Choose from: {list(BACKENDS)}")
+
+    cfg = BACKENDS[backend]
+    print(f"Backend: {cfg['label']}")
+
+    raw_df, X, y, groups = _load_data(data_dir)
+    n_runs = raw_df["run_id"].nunique()
+    print(f"  Leave-one-out CV — {n_runs} iterations\n")
+
+    logo = LeaveOneGroupOut()
+    all_y_true = []
+    all_y_pred = []
+    all_maes = []
+
+    for i, (train_idx, test_idx) in enumerate(logo.split(X, y, groups), 1):
+        m = _build_pipeline(backend, cfg["defaults"])
+        m.fit(X.iloc[train_idx], y[train_idx])
+
+        preds = m.predict(X.iloc[test_idx])
+        all_y_pred.extend(preds)
+        all_y_true.extend(y[test_idx])
+
+        # Which run is held out this iteration
+        run_id = np.unique(groups[test_idx])[0]
+        run_df = raw_df[raw_df["run_id"] == run_id]
+        acc = sum(p == t for p, t in zip(preds, y[test_idx])) / len(preds)
+
+        print(f"  [{i:>2}/{n_runs}]  Run {run_id}  accuracy={acc:.4f}")
+        mae = _print_transition_table(run_id, run_df, m)
+        if mae:
+            all_maes.append(mae)
+
+    # --- Aggregate results ---
+    print(f"\n{'='*60}")
+    print(f"  LOOCV Results — {n_runs} runs, {len(all_y_true):,} samples")
+    print(f"{'='*60}")
+    print(
+        classification_report(
+            all_y_true,
+            all_y_pred,
+            target_names=list(STAGE_NAMES.values()),
+            zero_division=0,
+        )
+    )
+    print("Confusion matrix (rows=true, cols=pred):")
+    print(confusion_matrix(all_y_true, all_y_pred))
+    if all_maes:
+        print(
+            f"\nTransition timing — mean MAE: {np.mean(all_maes):.1f} min  |  worst run: {max(all_maes):.1f} min"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Tune
+# ---------------------------------------------------------------------------
+
+
+def _tune_backend(backend, X, y, groups, scoring):
+    cfg = BACKENDS[backend]
+    grid = list(ParameterGrid(cfg["param_grid"]))
+    total = len(grid)
+    logo = LeaveOneGroupOut()
+
+    print(f"\n{'='*60}")
+    print(f"  {cfg['label']}  —  {total} combinations, LOOCV")
+    print(f"{'='*60}")
+
+    best_score = -np.inf
+    best_params = None
+    results = []
+
+    for i, params in enumerate(grid, 1):
+        try:
+            model = _build_pipeline(backend, params)
+            scores = cross_val_score(
+                model, X, y, groups=groups, cv=logo, scoring=scoring, n_jobs=-1
+            )
+            mean, std = scores.mean(), scores.std()
+        except Exception as e:
+            print(f"  [{i:>3}/{total}]  ERROR: {e}")
+            continue
+
+        results.append({"backend": backend, "params": params, "mean": mean, "std": std})
+        flag = " ✓ best" if mean > best_score else ""
+        print(f"  [{i:>3}/{total}]  {scoring}={mean:.4f} ±{std:.4f}  {params}{flag}")
+
+        if mean > best_score:
+            best_score = mean
+            best_params = params
+
+    print(f"\n  Best {cfg['label']}: {scoring}={best_score:.4f}  {best_params}")
+    return {
+        "backend": backend,
+        "params": best_params,
+        "score": best_score,
+        "results": results,
+    }
+
+
+def _tune_cnn_backend(X, y, groups, scoring):
+    from cnn import CNN_PARAM_GRID, make_windows, cv_score_cnn
+
+    grid = list(ParameterGrid(CNN_PARAM_GRID))
+    total = len(grid)
+    n_folds = len(np.unique(groups))
+
+    print(f"\n{'='*60}")
+    print(f"  1D CNN (TensorFlow)  —  {total} combinations, LOOCV")
+    print(f"  ⚠️  CNN tuning is slow. Reduce CNN_PARAM_GRID in cnn.py to speed up.")
+    print(f"{'='*60}")
+
+    X_win, y_win, g_win = make_windows(X.values, y, groups)
+
+    best_score = -np.inf
+    best_params = None
+    results = []
+
+    for i, params in enumerate(grid, 1):
+        try:
+            mean, std = cv_score_cnn(X_win, y_win, g_win, params, n_folds)
+        except Exception as e:
+            print(f"  [{i:>3}/{total}]  ERROR: {e}")
+            continue
+
+        results.append({"backend": "cnn", "params": params, "mean": mean, "std": std})
+        flag = " ✓ best" if mean > best_score else ""
+        print(f"  [{i:>3}/{total}]  f1_macro={mean:.4f} ±{std:.4f}  {params}{flag}")
+
+        if mean > best_score:
+            best_score = mean
+            best_params = params
+
+    print(f"\n  Best CNN: f1_macro={best_score:.4f}  {best_params}")
+    return {
+        "backend": "cnn",
+        "params": best_params,
+        "score": best_score,
+        "results": results,
+    }
+
+
+def tune(
+    data_dir: str,
+    model_path: Path = MODEL_PATH,
+    backend: str = "all",
+    scoring: str = "f1_macro",
+) -> dict:
+    """
+    Grid search using leave-one-out cross-validation.
+    After the search the winning model is retrained on all data and saved.
+    """
+    all_known = list(BACKENDS.keys()) + ["cnn"]
+    backends_to_run = all_known if backend == "all" else [backend]
+
+    for b in backends_to_run:
+        if b not in all_known:
+            raise ValueError(
+                f"Unknown backend '{b}'. Choose from: {all_known} or 'all'"
+            )
+
+    raw_df, X, y, groups = _load_data(data_dir)
+
+    all_results = []
+    for b in backends_to_run:
+        try:
+            if b == "cnn":
+                result = _tune_cnn_backend(X, y, groups, scoring)
+            else:
+                result = _tune_backend(b, X, y, groups, scoring)
+            all_results.append(result)
+        except ImportError as e:
+            print(f"\n  Skipping {b}: {e}")
+
+    if not all_results:
+        raise RuntimeError("All backends failed or were skipped.")
+
+    if len(all_results) > 1:
+        print(f"\n{'='*60}")
+        print("  COMPARISON SUMMARY")
+        print(f"{'='*60}")
+        for r in sorted(all_results, key=lambda r: r["score"], reverse=True):
+            label = (
+                BACKENDS[r["backend"]]["label"] if r["backend"] != "cnn" else "1D CNN"
+            )
+            print(f"  {r['score']:.4f}  {label:35s}  {r['params']}")
+
+    winner = max(all_results, key=lambda r: r["score"])
+    winner_label = (
+        BACKENDS[winner["backend"]]["label"] if winner["backend"] != "cnn" else "1D CNN"
+    )
+    print(f"\n🏆 Winner: {winner_label} ({scoring}={winner['score']:.4f})")
+
+    print("\nRetraining winning model on full dataset...")
+    if winner["backend"] == "cnn":
+        from cnn import make_windows, train_cnn
+
+        X_win, y_win, g_win = make_windows(X.values, y, groups)
+        train_cnn(X_win, y_win, g_win, winner["params"], model_path, test_size=None)
+    else:
+        best_model = _build_pipeline(winner["backend"], winner["params"])
+        best_model.fit(X, y)
+        joblib.dump(best_model, model_path)
+        print(f"Model saved → {model_path}")
+
+    return winner
