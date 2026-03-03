@@ -48,6 +48,8 @@ class FermentationService:
 
     def __init__(self, model_path: Path = MODEL_PATH):
         self.monitor = FermentationMonitor(model_path=model_path, silent=True)
+        self.monitor.subscribe(self.on_stage_transition)
+
         self.api_client = APIClient(base_url=config.API_ADDRESS)
 
         self.mqtt_client = MqttSubscriber(
@@ -56,7 +58,7 @@ class FermentationService:
         self.mqtt_client.add_subscribe_topic(config.TOPIC_FEEDING_SAMPLES_POSTED)
         self.mqtt_client.add_on_message_callback(self.on_message_received)
 
-        self._last_stage: Optional[int] = None
+        self._last_stage: int = 0  # Start at Lag until we get data
 
     def start(self):
         logger.info("Starting MQTT client loop...")
@@ -94,6 +96,15 @@ class FermentationService:
             raise
         return reading
 
+    def on_stage_transition(self, stage: int) -> None:
+        if stage != self._last_stage:
+            logger.info("=" * 40)
+            logger.info(
+                f"🍞 Stage transition: {STAGE_NAMES.get(self._last_stage, '?')} → {STAGE_NAMES.get(stage, '?')}"
+            )
+            logger.info("=" * 40)
+            self._last_stage = stage
+
     def on_message_received(self, topic: str, payload: str) -> None:
         if topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_POSTED, topic):
             logger.debug("Feeding samples posted received...")
@@ -112,23 +123,12 @@ class FermentationService:
                 return
 
             reading = self.convert_sample_to_reading(record)
-            stage = self.monitor.update(reading)
-
-            if stage != self._last_stage:
-                if self._last_stage is not None:
-                    logger.info("=" * 40)
-                    logger.info(
-                        f"🍞 Stage transition: {STAGE_NAMES.get(self._last_stage, '?')} → {STAGE_NAMES.get(stage, '?')}"
-                    )
-                    logger.info("=" * 40)
-                self._last_stage = stage
+            self.monitor.update(reading)
 
 
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
-
-
 def start(model_path: Path = MODEL_PATH) -> None:
     service = FermentationService(model_path=model_path)
     service.start()

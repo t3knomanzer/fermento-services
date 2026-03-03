@@ -30,4 +30,4 @@ BROKER_PORT = os.getenv("BROKER_PORT", 1883)
 
 TOPIC_FEEDING_SAMPLES_POSTED = "fermento/+/feeding_samples/posted"
 
-LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

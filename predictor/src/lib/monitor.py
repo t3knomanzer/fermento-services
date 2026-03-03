@@ -13,7 +13,7 @@ import pandas as pd
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 warnings.filterwarnings(
     "ignore",
@@ -69,6 +69,7 @@ class FermentationMonitor:
     peak_timeout_min: int = 120
     silent: bool = True
 
+    _callbacks: list = field(init=False, default_factory=list)
     _model: object = field(init=False, default=None)
     _is_cnn: bool = field(init=False, default=False)
     _buffer: list = field(init=False, default_factory=list)
@@ -151,6 +152,13 @@ class FermentationMonitor:
                 )
                 + "\n"
             )
+
+        if self._callbacks:
+            for cb in self._callbacks:
+                cb(stage)
+
+    def subscribe(self, callback: Callable[[int], None]) -> None:
+        self._callbacks.append(callback)
 
     def update(self, reading: SensorReading) -> int:
         """
