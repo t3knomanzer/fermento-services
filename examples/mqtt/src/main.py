@@ -2,9 +2,9 @@ from lib.mqtt.client import MqttSubscriber
 from lib.mqtt.utils import topic_matches_sub
 import pathlib
 
-BROKER_ADDRESS = "192.168.8.5"
+BROKER_ADDRESS = "13.50.219.203"
 BROKER_PORT = 1883
-TOPIC = "fermento/+/image"
+TOPIC = "fermento/+/feeding_samples/frame"
 
 counter = 0
 frames_path = pathlib.Path("./frames")
