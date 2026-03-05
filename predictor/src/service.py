@@ -26,7 +26,7 @@ from pydantic import ValidationError
 
 from config import STAGE_NAMES, MODEL_PATH
 import config
-from lib.mqtt.utils import topic_matches_sub
+from paho.mqtt.client import topic_matches_sub
 from lib.monitor import FermentationMonitor, SensorReading
 from lib.mqtt.client import MqttSubscriber
 from lib.api.client import APIClient
@@ -47,18 +47,20 @@ class FermentationService:
     """
 
     def __init__(self, model_path: Path = MODEL_PATH):
+        self._model_path = model_path
         self.monitor = FermentationMonitor(model_path=model_path, silent=True)
         self.monitor.subscribe(self.on_stage_transition)
 
         self.api_client = APIClient(base_url=config.API_ADDRESS)
 
         self.mqtt_client = MqttSubscriber(
-            config.BROKER_ADDRESS, int(config.BROKER_PORT)
+            config.BROKER_ADDRESS, config.BROKER_PORT
         )
         self.mqtt_client.add_subscribe_topic(config.TOPIC_FEEDING_SAMPLES_POSTED)
         self.mqtt_client.add_on_message_callback(self.on_message_received)
 
-        self._last_stage: int = 0  # Start at Lag until we get data
+        self._last_stage: int = 0
+        self._current_feeding_event_id: Optional[int] = None
 
     def start(self):
         logger.info("Starting MQTT client loop...")
@@ -98,20 +100,32 @@ class FermentationService:
 
     def on_stage_transition(self, stage: int) -> None:
         if stage != self._last_stage:
+            prev_name = STAGE_NAMES.get(self._last_stage, "?")
+            new_name = STAGE_NAMES.get(stage, "?")
+
             logger.info("=" * 40)
-            logger.info(
-                f"🍞 Stage transition: {STAGE_NAMES.get(self._last_stage, '?')} → {STAGE_NAMES.get(stage, '?')}"
+            logger.info(f"🍞 Stage transition: {prev_name} → {new_name}")
+            logger.info("=" * 40)
+
+            payload = json.dumps({
+                "feeding_event_id": self._current_feeding_event_id,
+                "previous_stage": prev_name,
+                "stage": new_name,
+                "stage_id": stage,
+            })
+            self.mqtt_client.publish(
+                config.TOPIC_STAGE_TRANSITION, payload, qos=1,
             )
-            logger.info("=" * 40)
+
             self._last_stage = stage
 
-    def on_message_received(self, topic: str, payload: str) -> None:
+    def on_message_received(self, topic: str, payload: bytes) -> None:
         if topic_matches_sub(config.TOPIC_FEEDING_SAMPLES_POSTED, topic):
             logger.debug("Feeding samples posted received...")
 
             # Payload to dict.
             try:
-                payload_dict = json.loads(payload)
+                payload_dict = json.loads(payload.decode("utf-8"))
                 record_id = int(payload_dict["id"])
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to decode JSON payload: {e}")
@@ -121,6 +135,19 @@ class FermentationService:
             if record is None:
                 logger.error(f"Failed to fetch record {record_id} from DB")
                 return
+
+            # Detect new fermentation run by feeding_event_id change
+            event_id = getattr(record, "feeding_event_id", None)
+            if event_id is not None and event_id != self._current_feeding_event_id:
+                if self._current_feeding_event_id is not None:
+                    logger.info(
+                        f"New feeding event detected (event {self._current_feeding_event_id} → {event_id}). "
+                        f"Creating new monitor."
+                    )
+                self._current_feeding_event_id = event_id
+                self.monitor = FermentationMonitor(model_path=self._model_path, silent=True)
+                self.monitor.subscribe(self.on_stage_transition)
+                self._last_stage = 0
 
             reading = self.convert_sample_to_reading(record)
             self.monitor.update(reading)

@@ -1,44 +1,35 @@
 #!/usr/bin/env python
 """
-Module containing the logger for the application
+Module containing the logger for the application.
 """
 
-
 import logging
-from enum import IntEnum
-from logging.handlers import TimedRotatingFileHandler
 from typing import Optional
 
 import config
 
+# ---------------------------------------------------------------------------
+# Configure logging once at import time
+# ---------------------------------------------------------------------------
+_log_level = logging.getLevelNamesMapping()[config.LOG_LEVEL]
 
-class LogLevel(IntEnum):
-    DEBUG = logging.DEBUG
-    INFO = logging.INFO
-    WARNING = logging.WARNING
-    ERROR = logging.ERROR
-    CRITICAL = logging.CRITICAL
+_console_handler = logging.StreamHandler()
+_console_handler.setLevel(_log_level)
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s][%(name)s][%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[_console_handler],
+)
+
+
+# ---------------------------------------------------------------------------
+# Logger wrapper
+# ---------------------------------------------------------------------------
 
 class Logger:
     def __init__(self, name: Optional[str] = "generic") -> None:
-        # Get the log level from the config and convert it to the correct int value
-        # We set the level in the logging module to the lowest and then control
-        # it in the individual handlers. The config value drives the console level,
-        # the file level is always set to DEBUG.
-        log_level = logging.getLevelNamesMapping()[config.LOG_LEVEL]
-
-        # Create a console handler to output logs to the console
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(log_level)
-
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="[%(asctime)s][%(name)s][%(levelname)s] %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            handlers=[console_handler],
-        )
-
         self._logger = logging.getLogger(name)
 
     def log(self, level: int, msg: object, **kwargs) -> None:

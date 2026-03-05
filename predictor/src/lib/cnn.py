@@ -162,7 +162,8 @@ def train_cnn(
     n_samples, n_steps, n_feats = X_train.shape
     scaler  = StandardScaler()
     X_train = scaler.fit_transform(X_train.reshape(-1, n_feats)).reshape(n_samples, n_steps, n_feats)
-    X_test  = scaler.transform(X_test.reshape(-1, n_feats)).reshape(X_test.shape[0], n_steps, n_feats)
+    if X_test is not None:
+        X_test = scaler.transform(X_test.reshape(-1, n_feats)).reshape(X_test.shape[0], n_steps, n_feats)
 
     model = build_cnn(n_feats, params)
 

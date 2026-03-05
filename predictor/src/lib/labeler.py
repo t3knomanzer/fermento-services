@@ -7,9 +7,9 @@ with stage bands for visual validation.
 
 Algorithm (applied to smoothed distance):
     Lag  → Exponential : distance drops LAG_DROP mm from start
-    Exponential → Peak : smoothed rise within PEAK_NEAR mm of its max,
-                         AND total rise exceeds MIN_RISE mm
-    Peak → Decline     : distance rises DEC_DROP mm above smoothed max
+    Exponential → Peak : smoothed rise within PEAK_NEAR_FRAC of total rise from its max
+    Peak → Decline     : backwards scan on heavily smoothed signal — last sample
+                         below global_min + DEC_DROP_FRAC * total_rise
 
 All thresholds require CONSISTENCY consecutive samples to confirm.
 
@@ -17,13 +17,13 @@ Usage:
     python main.py label <input_dir> <output_dir> [options]
 
 Options:
-    --smooth     Median filter window in samples     (default: 7)
-    --consistency  Consecutive samples to confirm     (default: 5)
-    --lag-drop   mm drop from start → Exponential    (default: 3.0)
-    --min-rise   mm min total rise before Peak fires  (default: 10.0)
-    --peak-near  mm from smoothed max → Peak         (default: 2.0)
-    --dec-drop   mm above smoothed max → Decline     (default: 5.0)
-    --no-plot    Skip plots (useful for batch runs)
+    --smooth           Median filter window in samples          (default: 7)
+    --smooth-dec       Heavy filter window for Decline scan     (default: 25)
+    --consistency      Consecutive samples to confirm           (default: 5)
+    --lag-drop         mm drop from start → Exponential         (default: 3.0)
+    --peak-near-frac   Fraction of total rise to enter Peak     (default: 0.10)
+    --dec-drop-frac    Fraction of total rise for Decline       (default: 0.15)
+    --no-plot          Skip plots (useful for batch runs)
 """
 
 import numpy as np

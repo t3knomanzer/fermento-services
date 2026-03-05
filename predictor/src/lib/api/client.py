@@ -34,14 +34,17 @@ class APIClient:
         self,
         method: str,
         path: str,
-        headers: Dict[str, str] = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
+        headers: Optional[Dict[str, str]] = None,
         **kwargs,
     ) -> Any:
         url = self._url(path)
         kwargs.setdefault("timeout", self.timeout)
+
+        if headers is None:
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
 
         if headers:
             kwargs.setdefault("headers", {}).update(headers)
@@ -88,14 +91,10 @@ class APIClient:
 
     # Specific method for uploading binary data (e.g. feeding sample frames)
     def upload(self, resource: str, data: bytes, **kwargs) -> Any:
-        url = f"/{resource}?"
-        for key, value in kwargs.items():
-            url += f"{key}={value}&"
-        url = url.rstrip("&")
-
         return self._request(
             "POST",
-            url,
+            f"/{resource}",
             data=data,
+            params=kwargs,
             headers={"Content-Type": "application/octet-stream"},
         )

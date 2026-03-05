@@ -26,7 +26,6 @@ services:
     networks:
       - edge-net
     depends_on:
-      - frontend
       - api
       - ingestor
 
@@ -53,29 +52,29 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=gr$590-mMkloqRt_90
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
       - GF_INSTALL_PLUGINS=volkovlabs-echarts-panel
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
       - edge-net
 
-  frontend:
-    image: fermento-frontend
-    container_name: fermento-frontend
-    build: ./frontend
-    restart: unless-stopped
-    environment:
-      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
-      - STREAMLIT_SERVER_PORT=8501
-      - STREAMLIT_SERVER_HEADLESS=true
-      - STREAMLIT_SERVER_ENABLESTATICSERVING=true
-      - STREAMLIT_SERVER_BASEURLPATH=/fermento/v1
-    ports:
-      - 8501:8501
-    networks:
-      - edge-net
+  # frontend:
+  #   image: fermento-frontend
+  #   container_name: fermento-frontend
+  #   build: ./frontend
+  #   restart: unless-stopped
+  #   environment:
+  #     - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+  #     - STREAMLIT_SERVER_PORT=8501
+  #     - STREAMLIT_SERVER_HEADLESS=true
+  #     - STREAMLIT_SERVER_ENABLESTATICSERVING=true
+  #     - STREAMLIT_SERVER_BASEURLPATH=/fermento/v1
+  #   ports:
+  #     - 8501:8501
+  #   networks:
+  #     - edge-net
 
   api:
     image: fermento-api
@@ -130,6 +129,19 @@ services:
     restart: unless-stopped
     environment:
       - API_ADDRESS=http://api:8091
+      - BROKER_ADDRESS=mosquitto
+      - BROKER_PORT=1883
+    networks:
+      - edge-net
+    depends_on:
+      - mosquitto
+
+  notifier:
+    image: fermento-notifier
+    container_name: fermento-notifier
+    build: ./notifier
+    restart: unless-stopped
+    environment:
       - BROKER_ADDRESS=mosquitto
       - BROKER_PORT=1883
     networks:

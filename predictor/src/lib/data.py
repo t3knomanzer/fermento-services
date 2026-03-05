@@ -50,10 +50,6 @@ def load_run(filepath: str) -> pd.DataFrame:
         df["distance"].rolling(window=5, center=True, min_periods=1).median()
     )
 
-    df["elapsed_min"] = (
-        df["timestamp"] - df["timestamp"].iloc[0]
-    ).dt.total_seconds() / 60
-
     for col, default in STATIC_DEFAULTS.items():
         if col not in df.columns:
             df[col] = default
@@ -177,7 +173,7 @@ def engineer_features(df: pd.DataFrame) -> pd.DataFrame:
     # counts up through the plateau, giving the model a stage-relative clock
     # that is independent of absolute run time (unlike elapsed_min which encodes
     # temperature-dependent timing and causes early Decline calls on slow runs).
-    f["time_since_new_max"] = _time_since_new_max(rise, df["elapsed_min"])
+    f["time_since_new_max"] = _time_since_new_max(rise, f["elapsed_min"])
 
     f = f.fillna(0).replace([np.inf, -np.inf], np.nan).fillna(0)
     return f

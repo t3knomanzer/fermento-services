@@ -21,7 +21,7 @@ warnings.filterwarnings(
     category=UserWarning,
 )
 
-from config import STAGE_NAMES, LONG_WIN, MODEL_PATH
+from config import STAGE_NAMES, LONG_WIN, MODEL_PATH, NOTIFICATIONS_LOG_PATH
 from lib.data import engineer_features
 
 
@@ -79,10 +79,20 @@ class FermentationMonitor:
     _baseline_dist: Optional[float] = field(init=False, default=None)
     _peak_entered_at: Optional[datetime] = field(init=False, default=None)
 
+    @property
+    def ready(self) -> bool:
+        """True once the warmup buffer has enough samples for reliable predictions."""
+        return len(self._buffer) >= LONG_WIN
+
+    @property
+    def warmup_progress(self) -> float:
+        """Fraction of warmup complete (0.0 → 1.0)."""
+        return min(len(self._buffer) / LONG_WIN, 1.0)
+
     def __post_init__(self):
         keras_path = Path(str(self.model_path) + ".keras")
         if keras_path.exists():
-            from cnn import CNNModel
+            from lib.cnn import CNNModel
 
             self._model = CNNModel(self.model_path)
             self._is_cnn = True
@@ -140,7 +150,7 @@ class FermentationMonitor:
         if not self.silent:
             print(msg)
 
-        with open("notifications.log", "a") as f:
+        with open(NOTIFICATIONS_LOG_PATH, "a") as f:
             f.write(
                 json.dumps(
                     {

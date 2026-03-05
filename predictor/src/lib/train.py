@@ -18,8 +18,6 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-import os
-import tempfile
 import numpy as np
 import pandas as pd
 import joblib
@@ -164,41 +162,49 @@ def _print_transition_table(run_id, run_df, model):
     """Run the monitor on a single run using a fitted model, print transition table."""
     from lib.monitor import FermentationMonitor, SensorReading
 
-    # Persist model to temp file — FermentationMonitor loads from path
-    with tempfile.NamedTemporaryFile(suffix=".pkl", delete=False) as tmp:
-        tmp_path = tmp.name
-    joblib.dump(model, tmp_path)
+    # Inject the in-memory model directly — avoids disk I/O per LOOCV fold
+    monitor = object.__new__(FermentationMonitor)
+    monitor.model_path = None
+    monitor.smoothing_window = 3
+    monitor.min_stage_samples = 2
+    monitor.peak_timeout_min = 120
+    monitor.silent = True
+    monitor._model = model
+    monitor._is_cnn = False
+    monitor._buffer = []
+    monitor._pred_buffer = []
+    monitor._callbacks = []
+    monitor._current_stage = 0
+    monitor._stage_sample_cnt = 0
+    monitor._baseline_dist = None
+    monitor._peak_entered_at = None
 
-    try:
-        monitor = FermentationMonitor(model_path=tmp_path, silent=True)
-        run_df = run_df.reset_index(drop=True)
+    run_df = run_df.reset_index(drop=True)
 
-        prev_stage, prev_true = None, None
-        true_transitions, pred_transitions = {}, {}
+    prev_stage, prev_true = None, None
+    true_transitions, pred_transitions = {}, {}
 
-        for _, row in run_df.iterrows():
-            reading = SensorReading(
-                timestamp=row["timestamp"].to_pydatetime(),
-                temperature=row["temperature"],
-                humidity=row["humidity"],
-                distance=row["distance"],
-                co2=row["co2"],
-                starter_ratio=row["starter_ratio"],
-                water_ratio=row["water_ratio"],
-                flour_ratio=row["flour_ratio"],
-            )
-            stage = monitor.update(reading)
-            true_stage = int(row["stage"])
+    for _, row in run_df.iterrows():
+        reading = SensorReading(
+            timestamp=row["timestamp"].to_pydatetime(),
+            temperature=row["temperature"],
+            humidity=row["humidity"],
+            distance=row["distance"],
+            co2=row["co2"],
+            starter_ratio=row["starter_ratio"],
+            water_ratio=row["water_ratio"],
+            flour_ratio=row["flour_ratio"],
+        )
+        stage = monitor.update(reading)
+        true_stage = int(row["stage"])
 
-            if true_stage != prev_true:
-                true_transitions[true_stage] = reading.timestamp
-            prev_true = true_stage
+        if true_stage != prev_true:
+            true_transitions[true_stage] = reading.timestamp
+        prev_true = true_stage
 
-            if stage != prev_stage:
-                pred_transitions[stage] = reading.timestamp
-            prev_stage = stage
-    finally:
-        os.unlink(tmp_path)
+        if stage != prev_stage:
+            pred_transitions[stage] = reading.timestamp
+        prev_stage = stage
 
     all_stages = sorted(set(true_transitions) | set(pred_transitions))
     col_w = 14
@@ -222,10 +228,22 @@ def _print_transition_table(run_id, run_df, model):
         print(f"      {name:<20}  {t_str:>{col_w}}   {p_str:>{col_w}}   {err_str:>10}")
 
     mae = sum(errors) / len(errors) if errors else 0.0
+    max_err = max(errors) if errors else 0.0
     if errors:
-        print(f"\n      MAE: {mae:.1f} min  |  Max error: {max(errors):.1f} min")
+        print(f"\n      MAE: {mae:.1f} min  |  Max error: {max_err:.1f} min")
 
-    return mae
+    # Build per-stage signed errors for analysis
+    stage_errors = {}
+    stage_map = {1: "exp_err", 2: "peak_err", 3: "dec_err"}
+    for sid, key in stage_map.items():
+        t_dt = true_transitions.get(sid)
+        p_dt = pred_transitions.get(sid)
+        if t_dt and p_dt:
+            stage_errors[key] = (p_dt - t_dt).total_seconds() / 60
+        else:
+            stage_errors[key] = 0.0
+
+    return {"mae": mae, "worst": max_err, **stage_errors}
 
 
 # ---------------------------------------------------------------------------
@@ -267,7 +285,7 @@ def train(data_dir: str, model_path: Path = MODEL_PATH, backend: str = "lgbm") -
 
 
 def _train_cnn(data_dir: str, model_path: Path) -> None:
-    from cnn import CNN_DEFAULTS, make_windows, train_cnn
+    from lib.cnn import CNN_DEFAULTS, make_windows, train_cnn
 
     print("Backend: 1D CNN (TensorFlow)")
     raw_df = load_all_runs(data_dir)
@@ -286,45 +304,178 @@ def _train_cnn(data_dir: str, model_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def validate(data_dir: str, backend: str = "lgbm") -> None:
+def _print_transition_table_cnn(run_id, run_df, keras_model, scaler):
     """
-    Leave-one-out cross-validation across all runs.
-    Each run is held out once while the model trains on the remaining N-1 runs.
-    Prints per-run transition tables and aggregate F1 + timing MAE.
-    Does not save a model — use train() after validating.
+    Same as _print_transition_table but drives FermentationMonitor with a
+    CNNModel wrapper built from an in-memory Keras model + scaler, without
+    touching disk.
     """
-    if backend not in BACKENDS:
-        raise ValueError(f"Unknown backend '{backend}'. Choose from: {list(BACKENDS)}")
+    from lib.monitor import FermentationMonitor, SensorReading
+    from lib.cnn import CNNModel, WINDOW_SIZE
+    import tensorflow as tf
 
-    cfg = BACKENDS[backend]
-    print(f"Backend: {cfg['label']}")
+    # Wrap the in-memory model so CNNModel.predict() works without loading from disk
+    wrapper = object.__new__(CNNModel)
+    wrapper._model = keras_model
+    wrapper._scaler = scaler
+    wrapper._window = []
+
+    # Patch FermentationMonitor to skip disk load and inject the wrapper directly
+    # Use the same smoothing params as FermentationMonitor defaults
+    # so CNN and tree LOOCV results are directly comparable.
+    monitor = object.__new__(FermentationMonitor)
+    monitor.smoothing_window = 3
+    monitor.min_stage_samples = 2
+    monitor.peak_timeout_min = 120
+    monitor.silent = True
+    monitor._model = wrapper
+    monitor._is_cnn = True
+    monitor._buffer = []
+    monitor._pred_buffer = []
+    monitor._callbacks = []
+    monitor._current_stage = 0
+    monitor._stage_sample_cnt = 0
+    monitor._baseline_dist = None
+    monitor._peak_entered_at = None
+
+    run_df = run_df.reset_index(drop=True)
+    prev_stage, prev_true = None, None
+    true_transitions, pred_transitions = {}, {}
+
+    for _, row in run_df.iterrows():
+        reading = SensorReading(
+            timestamp=row["timestamp"].to_pydatetime(),
+            temperature=row["temperature"],
+            humidity=row["humidity"],
+            distance=row["distance"],
+            co2=row["co2"],
+            starter_ratio=row["starter_ratio"],
+            water_ratio=row["water_ratio"],
+            flour_ratio=row["flour_ratio"],
+        )
+        stage = monitor.update(reading)
+        true_stage = int(row["stage"])
+
+        if true_stage != prev_true:
+            true_transitions[true_stage] = reading.timestamp
+        prev_true = true_stage
+
+        if stage != prev_stage:
+            pred_transitions[stage] = reading.timestamp
+        prev_stage = stage
+
+    all_stages = sorted(set(true_transitions) | set(pred_transitions))
+    col_w = 14
+    print(f"\n    Run {run_id}:")
+    print(f"      {'':20}  {'True':>{col_w}}   {'Prediction':>{col_w}}   {'Error':>10}")
+    print(f"      {'-'*20}  {'-'*col_w}   {'-'*col_w}   {'-'*10}")
+
+    errors = []
+    for sid in all_stages:
+        name = f"Stage {STAGE_NAMES.get(sid, sid)}:"
+        t_dt = true_transitions.get(sid)
+        p_dt = pred_transitions.get(sid)
+        t_str = t_dt.strftime("%H:%M:%S") if t_dt else "—"
+        p_str = p_dt.strftime("%H:%M:%S") if p_dt else "—"
+        if t_dt and p_dt:
+            err_min = (p_dt - t_dt).total_seconds() / 60
+            errors.append(abs(err_min))
+            err_str = f"{err_min:+.0f} min"
+        else:
+            err_str = "—"
+        print(f"      {name:<20}  {t_str:>{col_w}}   {p_str:>{col_w}}   {err_str:>10}")
+
+    mae = sum(errors) / len(errors) if errors else 0.0
+    max_err = max(errors) if errors else 0.0
+    if errors:
+        print(f"\n      MAE: {mae:.1f} min  |  Max error: {max_err:.1f} min")
+
+    # Build per-stage signed errors for analysis
+    stage_errors = {}
+    stage_map = {1: "exp_err", 2: "peak_err", 3: "dec_err"}
+    for sid, key in stage_map.items():
+        t_dt = true_transitions.get(sid)
+        p_dt = pred_transitions.get(sid)
+        if t_dt and p_dt:
+            stage_errors[key] = (p_dt - t_dt).total_seconds() / 60
+        else:
+            stage_errors[key] = 0.0
+
+    return {"mae": mae, "worst": max_err, **stage_errors}
+
+
+def _validate_cnn(data_dir: str) -> None:
+    """LOOCV for the CNN backend using raw windows (no engineered features)."""
+    try:
+        import tensorflow as tf
+        from tensorflow.keras.callbacks import EarlyStopping
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.metrics import classification_report, confusion_matrix, f1_score
+    except ImportError:
+        raise ImportError("TensorFlow is not installed. Run: pip install tensorflow")
+
+    from lib.cnn import CNN_DEFAULTS, make_windows, build_cnn, WINDOW_SIZE
+
+    print("Backend: 1D CNN (TensorFlow)")
 
     raw_df, X, y, groups = _load_data(data_dir)
     n_runs = raw_df["run_id"].nunique()
+    unique_ids = np.unique(groups)
     print(f"  Leave-one-out CV — {n_runs} iterations\n")
+
+    X_win, y_win, g_win = make_windows(X.values, y, groups)
 
     logo = LeaveOneGroupOut()
     all_y_true = []
     all_y_pred = []
     all_maes = []
+    all_max_errs = []
 
-    for i, (train_idx, test_idx) in enumerate(logo.split(X, y, groups), 1):
-        m = _build_pipeline(backend, cfg["defaults"])
-        m.fit(X.iloc[train_idx], y[train_idx])
+    for i, (train_idx, test_idx) in enumerate(logo.split(X_win, y_win, g_win), 1):
+        run_id = np.unique(g_win[test_idx])[0]
+        print(f"  [{i:>2}/{n_runs}]  Run {run_id}  training CNN...")
 
-        preds = m.predict(X.iloc[test_idx])
-        all_y_pred.extend(preds)
-        all_y_true.extend(y[test_idx])
+        X_tr, y_tr = X_win[train_idx], y_win[train_idx]
+        X_te, y_te = X_win[test_idx], y_win[test_idx]
 
-        # Which run is held out this iteration
-        run_id = np.unique(groups[test_idx])[0]
+        # Scale
+        n_s, n_st, n_f = X_tr.shape
+        scaler = StandardScaler()
+        X_tr = scaler.fit_transform(X_tr.reshape(-1, n_f)).reshape(n_s, n_st, n_f)
+        X_te_s = scaler.transform(X_te.reshape(-1, n_f)).reshape(
+            X_te.shape[0], n_st, n_f
+        )
+
+        model = build_cnn(n_f, CNN_DEFAULTS)
+        model.fit(
+            X_tr,
+            y_tr,
+            validation_split=0.1,
+            epochs=CNN_DEFAULTS["epochs"],
+            batch_size=CNN_DEFAULTS["batch_size"],
+            callbacks=[
+                EarlyStopping(monitor="val_loss", patience=8, restore_best_weights=True)
+            ],
+            verbose=0,
+        )
+
+        preds = np.argmax(model.predict(X_te_s, verbose=0), axis=1)
+        acc = (preds == y_te).mean()
+        print(f"             accuracy={acc:.4f}")
+
+        all_y_pred.extend(preds.tolist())
+        all_y_true.extend(y_te.tolist())
+
         run_df = raw_df[raw_df["run_id"] == run_id]
-        acc = sum(p == t for p, t in zip(preds, y[test_idx])) / len(preds)
+        result = _print_transition_table_cnn(run_id, run_df, model, scaler)
+        if result["mae"]:
+            all_maes.append(result["mae"])
+        if result["worst"]:
+            all_max_errs.append(result["worst"])
 
-        print(f"  [{i:>2}/{n_runs}]  Run {run_id}  accuracy={acc:.4f}")
-        mae = _print_transition_table(run_id, run_df, m)
-        if mae:
-            all_maes.append(mae)
+        # Free GPU memory between folds
+        del model
+        tf.keras.backend.clear_session()
 
     # --- Aggregate results ---
     print(f"\n{'='*60}")
@@ -342,8 +493,92 @@ def validate(data_dir: str, backend: str = "lgbm") -> None:
     print(confusion_matrix(all_y_true, all_y_pred))
     if all_maes:
         print(
-            f"\nTransition timing — mean MAE: {np.mean(all_maes):.1f} min  |  worst run: {max(all_maes):.1f} min"
+            f"\nTransition timing — mean MAE: {np.mean(all_maes):.1f} min  |  "
+            f"worst run: {max(all_maes):.1f} min  |  "
+            f"max error: {max(all_max_errs):.1f} min"
         )
+
+
+def validate(data_dir: str, backend: str = "lgbm", output_json: str = None) -> None:
+    """
+    Leave-one-out cross-validation across all runs.
+    Each run is held out once while the model trains on the remaining N-1 runs.
+    Prints per-run transition tables and aggregate F1 + timing MAE.
+    Does not save a model — use train() after validating.
+
+    If output_json is provided, saves per-run results to a JSON file
+    for use by the analyze command.
+    """
+    if backend == "cnn":
+        _validate_cnn(data_dir)
+        return
+
+    if backend not in BACKENDS:
+        raise ValueError(
+            f"Unknown backend '{backend}'. Choose from: {list(BACKENDS)} or 'cnn'"
+        )
+
+    cfg = BACKENDS[backend]
+    print(f"Backend: {cfg['label']}")
+
+    raw_df, X, y, groups = _load_data(data_dir)
+    n_runs = raw_df["run_id"].nunique()
+    print(f"  Leave-one-out CV — {n_runs} iterations\n")
+
+    logo = LeaveOneGroupOut()
+    all_y_true = []
+    all_y_pred = []
+    all_maes = []
+    all_max_errs = []
+    per_run_results = {}
+
+    for i, (train_idx, test_idx) in enumerate(logo.split(X, y, groups), 1):
+        m = _build_pipeline(backend, cfg["defaults"])
+        m.fit(X.iloc[train_idx], y[train_idx])
+
+        preds = m.predict(X.iloc[test_idx])
+        all_y_pred.extend(preds)
+        all_y_true.extend(y[test_idx])
+
+        # Which run is held out this iteration
+        run_id = np.unique(groups[test_idx])[0]
+        run_df = raw_df[raw_df["run_id"] == run_id]
+        acc = sum(p == t for p, t in zip(preds, y[test_idx])) / len(preds)
+
+        print(f"  [{i:>2}/{n_runs}]  Run {run_id}  accuracy={acc:.4f}")
+        result = _print_transition_table(run_id, run_df, m)
+        per_run_results[str(run_id)] = result
+        if result["mae"]:
+            all_maes.append(result["mae"])
+        if result["worst"]:
+            all_max_errs.append(result["worst"])
+
+    # --- Aggregate results ---
+    print(f"\n{'='*60}")
+    print(f"  LOOCV Results — {n_runs} runs, {len(all_y_true):,} samples")
+    print(f"{'='*60}")
+    print(
+        classification_report(
+            all_y_true,
+            all_y_pred,
+            target_names=list(STAGE_NAMES.values()),
+            zero_division=0,
+        )
+    )
+    print("Confusion matrix (rows=true, cols=pred):")
+    print(confusion_matrix(all_y_true, all_y_pred))
+    if all_maes:
+        print(
+            f"\nTransition timing — mean MAE: {np.mean(all_maes):.1f} min  |  "
+            f"worst run: {max(all_maes):.1f} min  |  "
+            f"max error: {max(all_max_errs):.1f} min"
+        )
+
+    if output_json:
+        import json
+        with open(output_json, "w") as f:
+            json.dump(per_run_results, f, indent=2)
+        print(f"\n✓ Per-run results saved → {output_json}")
 
 
 # ---------------------------------------------------------------------------
@@ -394,7 +629,7 @@ def _tune_backend(backend, X, y, groups, scoring):
 
 
 def _tune_cnn_backend(X, y, groups, scoring):
-    from cnn import CNN_PARAM_GRID, make_windows, cv_score_cnn
+    from lib.cnn import CNN_PARAM_GRID, make_windows, cv_score_cnn
 
     grid = list(ParameterGrid(CNN_PARAM_GRID))
     total = len(grid)
@@ -488,7 +723,7 @@ def tune(
 
     print("\nRetraining winning model on full dataset...")
     if winner["backend"] == "cnn":
-        from cnn import make_windows, train_cnn
+        from lib.cnn import make_windows, train_cnn
 
         X_win, y_win, g_win = make_windows(X.values, y, groups)
         train_cnn(X_win, y_win, g_win, winner["params"], model_path, test_size=None)
