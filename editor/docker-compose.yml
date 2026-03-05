@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    container_name: fermento-api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: ""  # empty = same-origin, proxied via nginx
+    container_name: fermento-ui
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
