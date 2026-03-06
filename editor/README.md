@@ -1,19 +1,6 @@
-# Fermento — Stage Boundary Editor
+# Fermento — Stage Editor & Analysis Dashboard
 
-Interactive web app for editing fermentation run CSV stage boundaries.
-Upload a CSV, visualize sensor data (distance, CO₂, temperature, humidity),
-drag stage boundaries, and download the modified file.
-
-## Architecture
-
-| Layer    | Tech               | Port |
-|----------|--------------------|------|
-| Backend  | FastAPI + Uvicorn  | 8000 |
-| Frontend | React 18 + SVG     | 3000 |
-| Proxy    | Nginx (in frontend)| 3000 |
-
-The frontend's nginx reverse-proxies `/api/*` requests to the backend container,
-so the browser only needs port **3000**.
+Two-mode web app for fermentation run analysis and stage boundary editing.
 
 ## Quick start
 
@@ -21,34 +8,53 @@ so the browser only needs port **3000**.
 docker compose up --build
 ```
 
-Then open **http://localhost:3000**.
+Open **http://localhost:3000**
 
-## Features
+## Modes
 
-- **Upload** any fermentation run `.csv` with columns:
-  `timestamp, distance, temperature, co2, humidity, stage`
-- **Interactive chart** — primary metric line with colored stage regions
-- **Drag boundaries** — diamond handles on stage dividers; drag left/right to reassign rows
-- **Overlays** — toggle CO₂, temperature, humidity traces on/off
-- **Helper lines** — max rate-of-change, max CO₂ peak (toggle on/off)
-- **Stage durations** — displayed over each colored region
-- **Hover tooltip** — shows all sensor values at the cursor position
-- **Download** — exports modified CSV with the original filename
+### Report mode (default)
+- Upload multiple CSVs at once (multi-select)
+- 4-panel interactive dashboard:
+  - Temperature distribution histogram
+  - Stage durations by run (stacked bars, sorted by temp)
+  - Temperature vs duration scatter with trend lines
+  - Max CO₂ vs temperature scatter
+- Hover any data point for run details
+- Click any data point to open that run in the sidebar editor
+- Expand sidebar editor to full screen
+- Stage edits automatically update the report panels
+- Download all modified CSVs as a zip
 
-## Development (without Docker)
+### Editor mode
+- Upload a single CSV for detailed stage boundary editing
+- Drag diamond handles to adjust stage boundaries
+- Toggle overlays (CO₂, temp, humidity, growth_norm, etc)
+- Helper lines (max rate-of-change, max CO₂)
+- Column management (exclude columns from export)
+- Download modified CSV with original filename
 
-**Backend:**
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+## Architecture
+
+| Layer    | Tech               | Port |
+|----------|--------------------|------|
+| Backend  | FastAPI + Uvicorn  | 8000 |
+| Frontend | React 18 + SVG     | 3000 |
+| Proxy    | Nginx              | 3000 |
+
+## File structure
+
 ```
+backend/
+  main.py              — FastAPI (upload, upload-multi, download, download-zip)
+  requirements.txt
+  Dockerfile
 
-**Frontend:**
-```bash
-cd frontend
-npm install
-REACT_APP_API_URL=http://localhost:8000 npm start
+frontend/src/
+  App.js               — Mode switcher (Report / Editor tabs)
+  shared.js            — Constants, helpers, profile builder
+  Editor.js            — Single-run stage boundary editor
+  Report.js            — Multi-run analysis dashboard (4 SVG panels)
+  index.js             — React entry
 ```
 
 ## CSV format
@@ -56,8 +62,7 @@ REACT_APP_API_URL=http://localhost:8000 npm start
 ```csv
 "timestamp","distance","temperature","co2","humidity",stage
 2026-02-27 14:02:12,98,31.8,1616,56.7,0
-...
 ```
 
-The `stage` column (integer) is what the editor modifies.
-All other columns are displayed but not changed.
+The `stage` column is auto-generated if missing (4 stages, evenly distributed).
+A `growth` column is computed as `max(distance) - distance`.
