@@ -38,7 +38,7 @@
 			"path": "nginx"
 		},
 		{
-			"path": "examples"
+			"path": "editor"
 		}
 	],
 	"settings": {}
