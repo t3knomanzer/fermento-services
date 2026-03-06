@@ -1,7 +1,3 @@
-import dotenv
-
-dotenv.load_dotenv()
-
 from lib.mqtt.client import MqttSubscriber
 import config
 
