@@ -13,3 +13,4 @@ TOPIC_STAGE_TRANSITION = "fermento/stage_transition/"
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 PHONE_NUMBER = os.getenv("PHONE_NUMBER", "+1234567890")
+AWS_REGION = os.getenv("AWS_DEFAULT_REGION", "eu-north-1")

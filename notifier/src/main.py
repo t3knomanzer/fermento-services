@@ -8,7 +8,7 @@ import json
 def send_sms(phone_number: str, message: str):
     # Placeholder for SMS sending logic
     print(f"Sending SMS to {phone_number}: {message}")
-    sns = boto3.client("sns")
+    sns = boto3.client("sns", region_name=config.AWS_REGION)
     sns.publish(
         PhoneNumber=phone_number,
         Message=message,
