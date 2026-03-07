@@ -77,7 +77,7 @@ BACKENDS = {
         "label": "LightGBM",
         "factory": lambda p: _get_lgbm()(**p, random_state=42, verbose=-1),
         "defaults": dict(
-            n_estimators=100,
+            n_estimators=200,
             max_depth=6,
             learning_rate=0.05,
             subsample=0.7,
@@ -576,6 +576,7 @@ def validate(data_dir: str, backend: str = "lgbm", output_json: str = None) -> N
 
     if output_json:
         import json
+
         with open(output_json, "w") as f:
             json.dump(per_run_results, f, indent=2)
         print(f"\n✓ Per-run results saved → {output_json}")
